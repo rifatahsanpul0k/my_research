@@ -6,8 +6,8 @@
   "metrics": {
     "silhouette": 0.14406859874725342,
     "knn_overlap": 0.002361460037652079,
-    "seed_stability_ari": 1.0,
-    "selection_score": 0.3725065913811571,
+    "seed_stability_ari": 0.6316923591618444,
+    "selection_score": 0.2620142991297104,
     "wall_time_seconds": 12.38,
     "unsupervised_selection_guarantee": true
   },
