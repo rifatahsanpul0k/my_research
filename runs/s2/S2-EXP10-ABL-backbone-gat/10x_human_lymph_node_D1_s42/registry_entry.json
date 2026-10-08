@@ -1,0 +1,21 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "S2-EXP10-ABL-backbone-gat",
+  "seed": 42,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.29822781682014465,
+    "seed_stability_ari": 0.5,
+    "reconstruction_balance": 0.020131808001846194,
+    "knn_overlap": 0.0031141416097940516,
+    "selection_score": 0.3233174883284271,
+    "wall_time_seconds": 6.71,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.1515640884116467,
+    "nmi": 0.2513303945804215,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791496277.7592292
+}

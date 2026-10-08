@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E13_S1",
+  "exp_id": "S2-EXP10-ABL-backbone-gat",
+  "seed": 42,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.1771225780248642,
+    "seed_stability_ari": 0.5,
+    "reconstruction_balance": 0.007147665503868467,
+    "knn_overlap": 0.008424932479042172,
+    "selection_score": 0.2722785643107194,
+    "wall_time_seconds": 3.64,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.06294294516988869,
+    "nmi": 0.11886913135470169,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791497128.5707135
+}

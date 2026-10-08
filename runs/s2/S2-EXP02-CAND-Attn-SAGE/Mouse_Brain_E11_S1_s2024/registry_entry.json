@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "S2-EXP02-CAND-Attn-SAGE",
+  "seed": 2024,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.41259172558784485,
+    "seed_stability_ari": 0.4537296236813657,
+    "reconstruction_balance": 0.011427795969974949,
+    "knn_overlap": 0.011656532993251806,
+    "selection_score": 0.34881409890167925,
+    "wall_time_seconds": 11.54,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.10555785419071703,
+    "nmi": 0.15192912042890272,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791496376.161293
+}

@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E13_S1",
+  "exp_id": "S2-EXP03-CAND-Gated-ARISE",
+  "seed": 2024,
+  "model_type": "Gated-ARISE",
+  "metrics": {
+    "silhouette": 0.15040305256843567,
+    "seed_stability_ari": 0.4318259086621994,
+    "reconstruction_balance": 0.0004472438027681904,
+    "knn_overlap": 0.02513679690047893,
+    "selection_score": 0.2329810332528077,
+    "wall_time_seconds": 25.84,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.08480263926794669,
+    "nmi": 0.1013059420514061,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791496838.801587
+}

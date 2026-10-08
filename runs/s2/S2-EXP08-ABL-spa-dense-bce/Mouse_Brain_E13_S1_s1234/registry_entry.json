@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E13_S1",
+  "exp_id": "S2-EXP08-ABL-spa-dense-bce",
+  "seed": 1234,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.006675688084214926,
+    "seed_stability_ari": 0.3778347528880702,
+    "reconstruction_balance": 0.00046175462697351644,
+    "knn_overlap": 0.026785986439952367,
+    "selection_score": 0.15389652731430875,
+    "wall_time_seconds": 18.24,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.08150069447016373,
+    "nmi": 0.11084084904825767,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791497049.324418
+}

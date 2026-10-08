@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "S2-EXP04-ABL-fusion-concat",
+  "seed": 2024,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": -0.02980438619852066,
+    "seed_stability_ari": 0.3338778388891155,
+    "reconstruction_balance": 0.0005012980760738905,
+    "knn_overlap": 0.051317283155342744,
+    "selection_score": 0.12172964069145271,
+    "wall_time_seconds": 11.38,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.21906370019849986,
+    "nmi": 0.26267660380796587,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791496465.1093795
+}

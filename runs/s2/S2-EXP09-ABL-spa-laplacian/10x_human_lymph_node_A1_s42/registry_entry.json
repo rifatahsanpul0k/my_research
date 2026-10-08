@@ -1,0 +1,21 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "S2-EXP09-ABL-spa-laplacian",
+  "seed": 42,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.3793941140174866,
+    "seed_stability_ari": 0.5,
+    "reconstruction_balance": 0.0752537055199849,
+    "knn_overlap": 0.003561811426657706,
+    "selection_score": 0.3668083867109916,
+    "wall_time_seconds": 38.46,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.20110220992123312,
+    "nmi": 0.3381610796789488,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791495221.1953878
+}

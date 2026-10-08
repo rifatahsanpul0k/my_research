@@ -1,0 +1,21 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "S2-EXP07-ABL-spa-zero",
+  "seed": 1234,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.024270882830023766,
+    "seed_stability_ari": 0.420098206207327,
+    "reconstruction_balance": 0.02333032190286643,
+    "knn_overlap": 0.004238056619204539,
+    "selection_score": 0.18241369999551363,
+    "wall_time_seconds": 34.73,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.17406222853573813,
+    "nmi": 0.2341237023796956,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791496009.4892244
+}

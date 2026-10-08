@@ -1,0 +1,21 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "S2-EXP03-CAND-Gated-ARISE",
+  "seed": 1234,
+  "model_type": "Gated-ARISE",
+  "metrics": {
+    "silhouette": 0.20689772069454193,
+    "seed_stability_ari": 0.6793801051175535,
+    "reconstruction_balance": 0.02203728441295662,
+    "knn_overlap": 0.002093460895489273,
+    "selection_score": 0.3589185872074295,
+    "wall_time_seconds": 55.4,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.2536858170035435,
+    "nmi": 0.34082578012304315,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791494629.0386755
+}

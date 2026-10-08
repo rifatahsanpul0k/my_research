@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "S2-EXP05-ABL-recon-pca30",
+  "seed": 1234,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.11048634350299835,
+    "seed_stability_ari": 0.5219555906038446,
+    "reconstruction_balance": 1.0,
+    "knn_overlap": 0.01558258179603089,
+    "selection_score": 0.4529767736427372,
+    "wall_time_seconds": 1.41,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.28245696958882593,
+    "nmi": 0.34358162879429077,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791496469.6358552
+}

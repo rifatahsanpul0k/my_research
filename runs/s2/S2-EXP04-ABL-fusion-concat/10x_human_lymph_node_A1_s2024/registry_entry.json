@@ -1,0 +1,21 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "S2-EXP04-ABL-fusion-concat",
+  "seed": 2024,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.08131980150938034,
+    "seed_stability_ari": 0.6107217602833737,
+    "reconstruction_balance": 0.02001853382401487,
+    "knn_overlap": 0.0038079424013322738,
+    "selection_score": 0.2808203314819046,
+    "wall_time_seconds": 38.39,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.1580633527457293,
+    "nmi": 0.2854482097810214,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791494806.1226296
+}

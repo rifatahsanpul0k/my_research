@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "S2-EXP09-ABL-spa-laplacian",
+  "seed": 1234,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.41702544689178467,
+    "seed_stability_ari": 0.3862155669231557,
+    "reconstruction_balance": 0.004515606508542293,
+    "knn_overlap": 0.011761331681063027,
+    "selection_score": 0.3221995268276846,
+    "wall_time_seconds": 11.49,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.14633224436972408,
+    "nmi": 0.2608908229256773,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791496603.572633
+}

@@ -1,0 +1,21 @@
+{
+  "dataset": "Mouse_Brain_E18_S1",
+  "exp_id": "S2-EXP06-ABL-recon-decoupled",
+  "seed": 2024,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.08283718675374985,
+    "seed_stability_ari": 0.37105805132479563,
+    "reconstruction_balance": 0.0006316768616707637,
+    "knn_overlap": 0.015405628566251169,
+    "selection_score": 0.18168443060375236,
+    "wall_time_seconds": 20.41,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.10148079206023634,
+    "nmi": 0.1603337717031092,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791498081.661557
+}

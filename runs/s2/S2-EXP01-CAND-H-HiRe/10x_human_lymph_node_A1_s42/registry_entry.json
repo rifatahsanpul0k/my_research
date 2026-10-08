@@ -1,0 +1,21 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "S2-EXP01-CAND-H-HiRe",
+  "seed": 42,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.10284274816513062,
+    "seed_stability_ari": 0.5,
+    "reconstruction_balance": 0.02261069559277899,
+    "knn_overlap": 0.003718387525170988,
+    "selection_score": 0.24565923838460804,
+    "wall_time_seconds": 44.51,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.203205561954038,
+    "nmi": 0.31906303205758285,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791494312.5348039
+}

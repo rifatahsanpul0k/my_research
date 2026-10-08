@@ -1,0 +1,21 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "S2-EXP08-ABL-spa-dense-bce",
+  "seed": 1234,
+  "model_type": "H-HiRe",
+  "metrics": {
+    "silhouette": 0.10206149518489838,
+    "seed_stability_ari": 0.2680781434329947,
+    "reconstruction_balance": 0.02436994074764892,
+    "knn_overlap": 0.005220656082165626,
+    "selection_score": 0.15292984359668702,
+    "wall_time_seconds": 40.19,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.24594650509440744,
+    "nmi": 0.3417652845708599,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791495139.2271483
+}

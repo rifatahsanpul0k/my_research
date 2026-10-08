@@ -1,0 +1,9 @@
+{
+  "silhouette": 0.0997222363948822,
+  "seed_stability_ari": 0.43533012826575623,
+  "reconstruction_balance": 0.0004591199561830629,
+  "knn_overlap": 0.042409126078870776,
+  "selection_score": 0.214112769855492,
+  "wall_time_seconds": 11.25,
+  "unsupervised_selection_guarantee": true
+}
