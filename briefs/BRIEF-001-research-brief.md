@@ -78,10 +78,10 @@ Each ships with `.h5ad` matrices, spatial coordinates in `obsm["spatial"]`, and 
 
 ### 3.2 Data flow (DECIDED 2026-10-07, REVISED 2026-10-08)
 
-The Mac never touches the datasets. The agent reaches the Kaggle notebook (PULOK gives its
-exact title — currently the placeholder `<name>`) **through its Kaggle MCP**:
-`kernels_list` (search by title) → `kernel_pull` → edit → `kernel_push` (pushing a new
-version queues execution on Kaggle) → poll `kernel_status` → fetch `kernel_output`.
+The Mac never touches the datasets. The agent reaches the Kaggle notebook titled
+**`research_notebook`** through its Kaggle MCP: `kernels_list` (search by that title)
+→ `kernel_pull` → edit → `kernel_push` (pushing a new version queues execution on
+Kaggle) → poll `kernel_status` → fetch `kernel_output`.
 There is no persistent live connection — push → run → poll is the mechanism.
 Exact tool names vary by MCP server (`kernels_list` vs `kaggle_list_kernels`, …) —
 the agent checks its own MCP tool list first.
