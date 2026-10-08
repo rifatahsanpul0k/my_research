@@ -122,13 +122,14 @@ The agent implements a closed loop — this is the core deliverable, not any sin
 2. VALIDATE  validate_config(cfg) — firewall: raises on annotation-based selection,
              dataset-identity branches, missing seeds.
 3. RUN       run_experiment(...) with ≥3 seeds; skip_done=True; per-seed metrics logged.
-3b. SYNC     download/copy ALL result folders from the run — wherever it executed (local
-             disk, Kaggle output, Colab) — into the local repository, e.g.
-             `runs/<stage>/<exp_id>/` (metrics, embeddings, cluster assignments, logs,
-             plots). The agent then ANALYZES these results (metric distributions,
-             failure modes, embedding sanity checks) and only this analysis — not
-             intuition — drives steps 6 and 8. Result folders are never left on remote
-             machines; the local repo is the single source of truth.
+3b. SYNC     the Kaggle notebook pushes ALL result folders straight to GitHub itself
+             (PAT in Kaggle Secrets — see KAGGLE_GITHUB_SETUP.md); there is no download
+             step. Results land in `runs/<stage>/<exp_id>/` (metrics, embeddings, cluster
+             assignments, logs, plots) plus the appended `registry.jsonl`, pushed after
+             EVERY run. The local agent then pulls, ANALYZES (metric distributions,
+             failure modes, embedding sanity checks), and only this analysis — not
+             intuition — drives steps 6 and 8. GitHub is the single source of truth;
+             nothing result-worthy lives only on Kaggle.
 4. CHECK     assertion: true_labels never entered the selection path (static check on the
              call graph + runtime flag). Leakage → discard run, log incident, continue.
 5. LOG       append full entry to registry.jsonl (config, metrics, post-hoc ARI quarantined
