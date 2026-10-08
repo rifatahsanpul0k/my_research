@@ -1,16 +1,18 @@
 """
 Dataset Registry and Data Loader for Spatial Multi-Omics.
-Enforces BRIEF-001 §1, BRIEF-003, and BRIEF-003b:
+Enforces BRIEF-001 §1, BRIEF-003, BRIEF-004, and BRIEF-005:
 - Predeclared K constants per dataset (declared exception).
 - Strict separation between unsupervised feature data and quarantined post-hoc annotations.
+- Strict cell index alignment across modalities and ground truth.
+- Robust sparse TF-IDF + TruncatedSVD for high-dimensional ATAC-seq without cell filtering.
 """
 
 import os
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple, Optional, List
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, TruncatedSVD
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.neighbors import NearestNeighbors, kneighbors_graph
 import scanpy as sc
@@ -83,21 +85,35 @@ def clr_normalize_each_cell(adata):
         data = data.toarray()
     log_data = np.log1p(data)
     geometric_mean = np.mean(log_data, axis=1, keepdims=True)
-    clr_data = log_data - geometric_mean
-    adata.X = clr_data
+    adata.X = log_data - geometric_mean
     return adata
 
 
 def tfidf(count_mat):
     if sp.issparse(count_mat):
-        count_mat = count_mat.toarray()
-    tf = count_mat / (count_mat.sum(axis=-1, keepdims=True) + 1e-12)
-    idf = np.log(1.0 + count_mat.shape[0] / (count_mat.sum(axis=0, keepdims=True) + 1e-12))
-    return tf * idf
+        mat = count_mat.tocsr()
+        row_sum = np.array(mat.sum(axis=1)).flatten()
+        row_sum[row_sum == 0] = 1.0
+        tf = mat.multiply(1.0 / row_sum[:, np.newaxis])
+        col_sum = np.array((mat > 0).sum(axis=0)).flatten()
+        col_sum[col_sum == 0] = 1.0
+        idf = np.log(1.0 + mat.shape[0] / col_sum)
+        return tf.multiply(idf).tocsr()
+    else:
+        row_sum = count_mat.sum(axis=-1, keepdims=True)
+        row_sum[row_sum == 0] = 1.0
+        tf = count_mat / row_sum
+        col_sum = (count_mat > 0).sum(axis=0, keepdims=True)
+        col_sum[col_sum == 0] = 1.0
+        idf = np.log(1.0 + count_mat.shape[0] / col_sum)
+        return tf * idf
 
 
-def run_pca(feature_matrix: np.ndarray, n_comps: int = 64) -> np.ndarray:
+def run_pca(feature_matrix, n_comps: int = 64) -> np.ndarray:
     max_comps = min(n_comps, feature_matrix.shape[0] - 1, feature_matrix.shape[1] - 1)
+    if sp.issparse(feature_matrix):
+        svd = TruncatedSVD(n_components=max(2, max_comps), random_state=42)
+        return svd.fit_transform(feature_matrix)
     pca = PCA(n_components=max(2, max_comps), random_state=42)
     return pca.fit_transform(feature_matrix)
 
@@ -121,6 +137,15 @@ def load_dataset_features_unsupervised(
     adata_rna.var_names_make_unique()
     adata_mod2.var_names_make_unique()
 
+    # Align common cell barcodes across modalities strictly
+    common_cells = adata_rna.obs_names.intersection(adata_mod2.obs_names)
+    if len(common_cells) == 0:
+        raise ValueError(f"No overlapping cells found between RNA and {cfg['mod2_file']} in {base_dir}")
+
+    adata_rna = adata_rna[common_cells].copy()
+    adata_mod2 = adata_mod2[common_cells].copy()
+
+    # Preprocess RNA
     sc.pp.filter_genes(adata_rna, min_cells=10)
     sc.pp.normalize_total(adata_rna, target_sum=1e4)
     sc.pp.log1p(adata_rna)
@@ -136,7 +161,7 @@ def load_dataset_features_unsupervised(
         rna_raw = rna_raw.toarray()
     rna_pca = run_pca(rna_raw, n_comps=n_comps_rna)
 
-    adata_mod2 = adata_mod2[adata_rna.obs_names].copy()
+    # Preprocess Modality 2 (ADT or ATAC)
     if cfg["type"] == "10x":
         adata_mod2 = clr_normalize_each_cell(adata_mod2)
         sc.pp.scale(adata_mod2)
@@ -145,11 +170,10 @@ def load_dataset_features_unsupervised(
             mod2_raw = mod2_raw.toarray()
         mod2_pca = run_pca(mod2_raw, n_comps=min(n_comps_mod2, mod2_raw.shape[1]))
     else:
-        adata_mod2.X = tfidf(adata_mod2.X)
-        sc.pp.normalize_per_cell(adata_mod2, counts_per_cell_after=1e4)
-        sc.pp.log1p(adata_mod2)
-        atac_comps = min(60, adata_mod2.shape[1])
-        mod2_raw = run_pca(adata_mod2.X, n_comps=atac_comps)
+        # ATAC-seq: Sparse TF-IDF + TruncatedSVD (preserves all cells, no cell dropping)
+        tfidf_mat = tfidf(adata_mod2.X)
+        atac_comps = min(60, tfidf_mat.shape[1])
+        mod2_raw = run_pca(tfidf_mat, n_comps=atac_comps)
         mod2_pca = mod2_raw[:, :min(n_comps_mod2, atac_comps)]
 
     cell_positions = adata_rna.obsm['spatial'].astype(np.float32)
@@ -157,6 +181,7 @@ def load_dataset_features_unsupervised(
     return {
         "dataset_name": cfg["name"],
         "num_clusters": DECLARED_K[cfg["name"]],
+        "cell_names": list(common_cells),
         "rna_raw": rna_raw.astype(np.float32),
         "mod2_raw": mod2_raw.astype(np.float32),
         "rna_pca": rna_pca.astype(np.float32),
@@ -165,7 +190,7 @@ def load_dataset_features_unsupervised(
     }
 
 
-def load_posthoc_ground_truth(base_dir: str, cfg: Dict[str, Any]) -> np.ndarray:
+def load_posthoc_ground_truth(base_dir: str, cfg: Dict[str, Any], cell_names: Optional[List[str]] = None) -> np.ndarray:
     anno_path = os.path.join(base_dir, cfg["anno_file"])
     if not os.path.exists(anno_path):
         raise FileNotFoundError(f"Missing annotation file at {anno_path}")
@@ -174,5 +199,10 @@ def load_posthoc_ground_truth(base_dir: str, cfg: Dict[str, Any]) -> np.ndarray:
     gt_column = cfg["gt_column"]
     if gt_column not in anno_df.columns:
         raise KeyError(f"Column '{gt_column}' not found in {anno_path}")
+
+    if cell_names is not None:
+        common = [c for c in cell_names if c in anno_df.index]
+        if len(common) == len(cell_names):
+            return anno_df.loc[cell_names, gt_column].to_numpy()
 
     return anno_df[gt_column].to_numpy()
