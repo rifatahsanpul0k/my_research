@@ -9,8 +9,12 @@
 
 ## Pre-flight fixes (BEFORE the first Stage 1 run)
 
-1. **k must not come from labels.** The snippet computed `k_clusters` from `ground_truth.nunique()` — forbidden (§1). Replace with a label-free choice: sweep k over a small declared range and select by silhouette, or use a fixed declared constant recorded in the registry with its provenance noted. Never inspect an annotation file (`.nunique()`, value counts, anything) in the decision path.
-   - *Open judgment call for PULOK:* the smolab dataset registry carries `n_clusters` per dataset, values originally taken from annotation counts. **Default for Stage 1:** keep them as declared constants with provenance flagged in the registry; revisit (option: full label-free k-sweep) before final model selection. PULOK can override in chat anytime.
+1. **k comes from ground-truth class counts — DECLARED EXCEPTION (decided by PULOK 2026-10-08).** PULOK confirms: in his pipeline `n_clusters` is always the label counts from ground truth. This is honestly label use in the decision loop (the field-standard form of leakage), so it is recorded here as an explicit exception to §1, not a hidden violation:
+   - It is applied **identically to every config** in the matrix, so it cannot bias RAUS *ranking* between configs — selection stays label-free.
+   - It keeps absolute ARI numbers comparable to published baselines, which all do the same.
+   - The final report must disclose it as a limitation: the "unsupervised" claim covers training and model selection; k uses annotation counts, as in the compared literature.
+   - The original snippet's pattern (`ground_truth.nunique()` computed inline at runtime) is still replaced: k is read once from the dataset registry as a declared constant, never recomputed by inspecting an annotation file mid-pipeline.
+   - *If PULOK later wants the strict version:* a label-free k-sweep (silhouette-selected) can be added as an ablation. Default stays with the declared exception.
 2. **`ground_truth` inside `train_model`.** Audit the full pipeline code — PULOK confirms the ground-truth paths are given (`annotation.csv` / `anno.csv` per dataset, see DATASETS.md). `ground_truth` may enter **only** the post-hoc logging path (`posthoc.json`, reporting-only). Refactor so the training and selection code cannot import it. Encode as a runtime assertion (`test_firewall.py`): any selection-path access to labels raises.
 3. The annotation loader must expose labels through a separate, clearly-marked post-hoc-only channel from the start — no shared dataframe columns that training code could accidentally read.
 
