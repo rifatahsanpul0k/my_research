@@ -76,13 +76,29 @@ PULOK and Phoenix have already built most of the foundation (all paths relative 
 
 Each ships with `.h5ad` matrices, spatial coordinates in `obsm["spatial"]`, and annotation CSVs. **The annotation files are post-hoc-only** — the agent's data loader must expose them through a separate, clearly-marked channel that the selection code cannot import.
 
-### 3.2 Data flow (DECIDED 2026-10-07)
+### 3.2 Data flow (DECIDED 2026-10-07, REVISED 2026-10-08)
 
-PULOK supplies the dataset Drive link(s). The agent downloads the data **once**, uploads it to Kaggle as a **private Kaggle dataset**, and every run executes on Kaggle against that dataset. Datasets are never downloaded twice — the Kaggle dataset is the single source of data; runs always mount it rather than re-fetching.
+The Mac never touches the datasets. The agent reaches the Kaggle notebook (PULOK gives its
+exact title — currently the placeholder `<name>`) **through its Kaggle MCP**:
+`kernels_list` (search by title) → `kernel_pull` → edit → `kernel_push` (pushing a new
+version queues execution on Kaggle) → poll `kernel_status` → fetch `kernel_output`.
+There is no persistent live connection — push → run → poll is the mechanism.
+Exact tool names vary by MCP server (`kernels_list` vs `kaggle_list_kernels`, …) —
+the agent checks its own MCP tool list first.
 
-- The Drive payload should contain all six datasets (A1, D1, E11, E13, E15, E18). E18's original link was truncated/broken — PULOK re-supplies it or the study proceeds with five.
+One-time data ingestion (Stage 0): the agent pushes a notebook version whose setup cells
+`pip install gdown`, download the six Drive folders **inside Kaggle** (server-to-server;
+the agent injects the links from its local `DATASETS.md`, which never enters git or the
+notebook), then create a **private Kaggle dataset** from the download via the Kaggle API
+(requires `KAGGLE_USERNAME` / `KAGGLE_KEY` in Kaggle Secrets; notebook Internet must be ON).
+The dataset persists on Kaggle — "keep it saved". Every experiment run mounts that
+dataset; nothing is ever downloaded twice.
+
+- The Drive payload contains all six datasets (A1, D1, E11, E13, E15, E18).
+  E18's link was RESOLVED 2026-10-08 (33-char folder ID).
 - Annotation CSVs ride along with the data but stay behind the post-hoc-only channel (§1).
-- Raw data never enters git (`.gitignore` already excludes `*.h5ad` and dataset dirs); only metrics, plots, configs, and reports are committed.
+- Raw data never enters git (`.gitignore` already excludes `*.h5ad` and dataset dirs);
+  only metrics, plots, configs, and reports are committed.
 
 ### 3.3 Preprocessing recipes (established 2026-09-30, keep as defaults)
 
@@ -207,8 +223,8 @@ Antigravity supports MCP natively. On **PULOK's Mac**, in Antigravity:
 ## 9. Decisions PULOK must confirm (agent does not start before these)
 
 1. **Codebase:** extend `smolab` (recommended — firewall, registry, and Phase 1 matrix already exist) vs. fresh repo (agent reimplements the firewall first).
-2. **Data flow:** DECIDED 2026-10-07 — Drive link → one-time upload to Kaggle as a private dataset → all runs mount it there. Never download twice.
-3. **E18:** re-supply the download link (the Drive folder ID was truncated — 32 vs 33 chars), or drop E18 from the study.
+2. **Data flow:** DECIDED 2026-10-07, REVISED 2026-10-08 — the agent reaches the Kaggle notebook via its Kaggle MCP; the notebook downloads the Drive folders itself (server-to-server) and saves them as a private Kaggle dataset. The Mac never downloads the data. All runs mount the saved dataset. Never download twice.
+3. **E18:** RESOLVED 2026-10-08 — PULOK supplied the full 33-char Drive folder ID; all six datasets proceed.
 4. **Compute budget:** how many CPU-hours on the MacBook Air before spilling to Colab/Kaggle GPUs? (Recommend: Stage 1 screening on Kaggle/Colab GPUs; Mac for orchestration and analysis.)
 5. **Run budget for the loop:** max configs and max wall-clock per stage — the loop's termination condition.
 6. **Model:** confirm the exact model name configured in Antigravity (brief is model-agnostic).
