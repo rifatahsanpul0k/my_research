@@ -20,6 +20,8 @@ Build and run a **fully automated, strictly unsupervised** machine-learning rese
 
 The research goal is to **find the combination of preprocessing → encoder → fusion → clustering that works best**, discovered by systematic automated experimentation — not by hand-tuning against labels.
 
+**The central objective is the best fused embedding.** In service of that goal, the agent is authorized — expected — to draw on the *entire* unsupervised machine-learning toolbox: representation learning, self-supervised and contrastive methods, manifold learning, generative models (VAE/flow/diffusion families), multi-view and multimodal techniques, spectral methods, and anything else in the literature sweeps. Breadth of exploration is the job; any candidate shortlist in a stage brief is a starting point, not a boundary. All six datasets stay in scope throughout.
+
 ---
 
 ## 1. Non-negotiable methodological constraints
