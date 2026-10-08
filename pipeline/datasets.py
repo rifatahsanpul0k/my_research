@@ -122,9 +122,12 @@ def load_dataset_features_unsupervised(
     adata_mod2.var_names_make_unique()
 
     sc.pp.filter_genes(adata_rna, min_cells=10)
-    sc.pp.highly_variable_genes(adata_rna, flavor="seurat_v3", n_top_genes=min(n_hvg, adata_rna.shape[1]))
     sc.pp.normalize_total(adata_rna, target_sum=1e4)
     sc.pp.log1p(adata_rna)
+    try:
+        sc.pp.highly_variable_genes(adata_rna, flavor="seurat", n_top_genes=min(n_hvg, adata_rna.shape[1]))
+    except Exception:
+        sc.pp.highly_variable_genes(adata_rna, n_top_genes=min(n_hvg, adata_rna.shape[1]))
     sc.pp.scale(adata_rna)
 
     hvg_mask = adata_rna.var['highly_variable']
