@@ -61,15 +61,18 @@ print("imports ok")
 '''))
 
 cells.append(code('''# ---------- GitHub push (guarded: the test runs even if push fails) ----------
+REPO = "/kaggle/working/my_research"
+def sh(*args):
+    subprocess.run(list(args), check=True, cwd=REPO)
+os.makedirs(REPO, exist_ok=True)
+OUT = os.path.join(REPO, "runs", "sweep")
+os.makedirs(OUT, exist_ok=True)
 try:
     from kaggle_secrets import UserSecretsClient
     import base64
     _sec = UserSecretsClient()
     _b64 = base64.b64encode(f"x-access-token:{_sec.get_secret('GITHUB_TOKEN')}".encode()).decode()
     _GIT = ["git", "-c", f"http.extraHeader=Authorization: Basic {_b64}"]
-    REPO = "/kaggle/working/my_research"
-    def sh(*args):
-        subprocess.run(list(args), check=True, cwd=REPO)
     if not os.path.isdir(os.path.join(REPO, ".git")):
         subprocess.run(_GIT + ["clone", "https://github.com/rifatahsanpul0k/my_research.git", REPO], check=True)
         sh("git", "config", "user.name", "kaggle-runner")
@@ -579,8 +582,6 @@ print(f"{len(COMBINATIONS)} combinations registered")
 '''))
 
 cells.append(code('''# ---------- embedding generation test runner ----------
-OUT = "/kaggle/working/sweep_out"
-os.makedirs(OUT, exist_ok=True)
 REG = os.path.join(OUT, "registry.jsonl")
 
 def done_set():
@@ -667,7 +668,7 @@ for combo_name, override in COMBINATIONS:
             with open(REG, "a") as f:
                 f.write(json.dumps({"combo": combo_name, "dataset": ds_id, "seed": "AGG",
                                     "mean_silhouette": msil, "seed_stability_ari": stab}) + "\\n")
-    git_push([f"sweep_out/{combo_name}"], f"sweep: {combo_name} embeddings")
+    git_push([f"runs/sweep/{combo_name}"], f"sweep: {combo_name} embeddings")
 
 print("sweep complete")
 '''))
@@ -685,7 +686,7 @@ for ds_id in sorted(agg):
 json.dump([{"combo": c, "dataset": d, "mean_silhouette": s, "seed_stability": st}
            for c, d, s, st in results],
           open(os.path.join(OUT, "summary.json"), "w"), indent=2)
-git_push(["sweep_out/summary.json", "sweep_out/registry.jsonl"], "sweep: summary + registry")
+git_push(["runs/sweep/summary.json", "runs/sweep/registry.jsonl"], "sweep: summary + registry")
 print("\\nAll fused embeddings saved under", OUT)
 '''))
 
@@ -693,7 +694,8 @@ cells.append(md('''## Notes for the agent
 - **Resume:** the runner skips `(combo, dataset, seed)` already in `registry.jsonl`. Safe to re-run after disconnects; split across sessions if needed.
 - **Firewall:** ground-truth labels are read once at startup for the declared k and post-hoc ARI only. They never enter training, fusion, or selection.
 - **Budgets:** 30 GPU-hours/week cap still binds; check quota before launching.
-- Results land in `runs/sweep/<combo>/` after the GitHub push — wait, this notebook saves to `/kaggle/working/sweep_out/`. The push above stages `sweep_out/...`; rename the destination to `runs/sweep/` when wiring the final push, or keep `sweep_out/` and note the mapping in the stage report.
+- Results land in `runs/sweep/<combo>/` on GitHub after every combination; re-running resumes from `runs/sweep/registry.jsonl` (`skip_done`). If the session disconnects, just Save & Run All again.
+- **Manual run (no agent):** upload this notebook to Kaggle → attach the private dataset `pulokpulok/spatial-multiomics-6datasets-private` as input → optionally add the `GITHUB_TOKEN` secret for auto-push → set accelerator to GPU T4 → Save & Run All. Without the secret, results stay in `/kaggle/working/my_research/runs/sweep/` — download them from the session output panel.
 '''))
 
 nb = {
