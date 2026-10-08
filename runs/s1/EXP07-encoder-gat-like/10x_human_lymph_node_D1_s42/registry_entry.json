@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP07-encoder-gat-like",
+  "seed": 42,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.14230243861675262,
+    "knn_overlap": 0.00300877007306466,
+    "seed_stability_ari": 1.0,
+    "selection_score": 0.37175297332298923,
+    "wall_time_seconds": 12.16,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.15730348200015262,
+    "nmi": 0.2814228163794088,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479448.802189
+}

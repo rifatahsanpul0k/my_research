@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP12-graph-spatial-heavy",
+  "seed": 1234,
+  "model_type": "M4",
+  "metrics": {
+    "silhouette": 0.20745515823364258,
+    "knn_overlap": 0.014186445404150089,
+    "seed_stability_ari": 0.46168064218723787,
+    "selection_score": 0.24506906085382268,
+    "wall_time_seconds": 2.83,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.2992953805476526,
+    "nmi": 0.397614860045214,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480457.2147014
+}

@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP07-encoder-gat-like",
+  "seed": 2024,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.1283143162727356,
+    "knn_overlap": 0.012392797362901385,
+    "seed_stability_ari": 0.4544306275989685,
+    "selection_score": 0.2029649058886386,
+    "wall_time_seconds": 4.32,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.307302818192068,
+    "nmi": 0.3776972863596963,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480273.3844774
+}

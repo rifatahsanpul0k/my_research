@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP01-M0-base-smart",
+  "seed": 1234,
+  "model_type": "M0",
+  "metrics": {
+    "silhouette": 0.11723841726779938,
+    "knn_overlap": 0.004002689459157415,
+    "seed_stability_ari": 0.4059817555431073,
+    "selection_score": 0.18121427318866334,
+    "wall_time_seconds": 3.47,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.17670393330460166,
+    "nmi": 0.3498753653180112,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479147.9006448
+}

@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP11-loss-contrast-heavy",
+  "seed": 2024,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.13489603996276855,
+    "knn_overlap": 0.003065394817866304,
+    "seed_stability_ari": 0.48282718998464935,
+    "selection_score": 0.21290925594035234,
+    "wall_time_seconds": 12.03,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.15910406862616738,
+    "nmi": 0.2753133796017,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479738.8758852
+}

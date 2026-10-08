@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "EXP03-M2-hierarchical",
+  "seed": 1234,
+  "model_type": "M2",
+  "metrics": {
+    "silhouette": 0.34566283226013184,
+    "knn_overlap": 0.0028189966598058764,
+    "seed_stability_ari": 0.5783701115727437,
+    "selection_score": 0.34690624893385014,
+    "wall_time_seconds": 3.98,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.2614392750731956,
+    "nmi": 0.37693188557928764,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791478341.1072752
+}

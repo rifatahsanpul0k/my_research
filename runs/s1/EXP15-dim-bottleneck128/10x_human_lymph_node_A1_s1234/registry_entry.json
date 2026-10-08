@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "EXP15-dim-bottleneck128",
+  "seed": 1234,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.13736702501773834,
+    "knn_overlap": 0.0021375437851829395,
+    "seed_stability_ari": 0.4042373220062079,
+    "selection_score": 0.19038221786776813,
+    "wall_time_seconds": 13.85,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.19440091196560708,
+    "nmi": 0.33349486089113206,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479090.5722792
+}

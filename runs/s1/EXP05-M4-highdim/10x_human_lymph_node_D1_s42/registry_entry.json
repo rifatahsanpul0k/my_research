@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP05-M4-highdim",
+  "seed": 42,
+  "model_type": "M4",
+  "metrics": {
+    "silhouette": 0.19278886914253235,
+    "knn_overlap": 0.00341516464438927,
+    "seed_stability_ari": 1.0,
+    "selection_score": 0.397077467500144,
+    "wall_time_seconds": 8.53,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.11607262766663279,
+    "nmi": 0.23171535057156112,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479318.1310027
+}

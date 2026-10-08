@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP06-M5-arise-gcn",
+  "seed": 2024,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.12283455580472946,
+    "knn_overlap": 0.01241280902186791,
+    "seed_stability_ari": 0.4631632453736133,
+    "selection_score": 0.20284881331882232,
+    "wall_time_seconds": 4.19,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.3026909795011589,
+    "nmi": 0.38112795605458677,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480231.5309918
+}

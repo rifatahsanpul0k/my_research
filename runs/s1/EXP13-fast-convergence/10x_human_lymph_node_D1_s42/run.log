@@ -1,0 +1,6 @@
+Epoch  20 | Loss: 60.3312 | Label-Free Sil: 0.0949
+Epoch  40 | Loss: 56.2733 | Label-Free Sil: 0.0900
+Epoch  60 | Loss: 54.0445 | Label-Free Sil: 0.0865
+Epoch  80 | Loss: 52.1962 | Label-Free Sil: 0.0967
+Epoch 100 | Loss: 50.7377 | Label-Free Sil: 0.0878
+Epoch 120 | Loss: 49.5980 | Label-Free Sil: 0.1084

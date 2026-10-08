@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP09-fusion-cross-attention",
+  "seed": 1234,
+  "model_type": "attn_fusion",
+  "metrics": {
+    "silhouette": 0.2446470707654953,
+    "knn_overlap": 0.0031070658669184507,
+    "seed_stability_ari": 0.3466397128365382,
+    "selection_score": 0.2269368624070928,
+    "wall_time_seconds": 10.13,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.1449403533442838,
+    "nmi": 0.29441234267209343,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479579.7364461
+}

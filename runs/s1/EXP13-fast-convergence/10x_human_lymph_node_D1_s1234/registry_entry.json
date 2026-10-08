@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP13-fast-convergence",
+  "seed": 1234,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.1283564418554306,
+    "knn_overlap": 0.002638550158850741,
+    "seed_stability_ari": 0.6720915587249761,
+    "selection_score": 0.2663333985769783,
+    "wall_time_seconds": 9.67,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.2347169118325084,
+    "nmi": 0.31816461530543005,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479837.0275722
+}

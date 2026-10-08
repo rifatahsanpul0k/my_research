@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_A1",
+  "exp_id": "EXP12-graph-spatial-heavy",
+  "seed": 2024,
+  "model_type": "M4",
+  "metrics": {
+    "silhouette": 0.19485211372375488,
+    "knn_overlap": 0.0042513701517509035,
+    "seed_stability_ari": 0.35712655402684523,
+    "selection_score": 0.20541429710028117,
+    "wall_time_seconds": 8.73,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.17297057256136097,
+    "nmi": 0.3010332974598866,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791478908.6646726
+}

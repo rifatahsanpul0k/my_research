@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP08-encoder-mlp-baseline",
+  "seed": 1234,
+  "model_type": "M0",
+  "metrics": {
+    "silhouette": 0.1183093935251236,
+    "knn_overlap": 0.003962359604946171,
+    "seed_stability_ari": 0.3727780025975893,
+    "selection_score": 0.17178056946282783,
+    "wall_time_seconds": 3.44,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.16044404752251812,
+    "nmi": 0.3250507982038954,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479523.523197
+}

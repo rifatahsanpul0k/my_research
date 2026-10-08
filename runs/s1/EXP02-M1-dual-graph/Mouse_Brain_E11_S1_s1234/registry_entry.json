@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP02-M1-dual-graph",
+  "seed": 1234,
+  "model_type": "M1",
+  "metrics": {
+    "silhouette": 0.13378934562206268,
+    "knn_overlap": 0.019660218165419244,
+    "seed_stability_ari": 0.595413140490576,
+    "selection_score": 0.249450658591288,
+    "wall_time_seconds": 2.73,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.3246111286972425,
+    "nmi": 0.4519305961489886,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480067.1396809
+}

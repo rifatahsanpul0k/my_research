@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP11-loss-contrast-heavy",
+  "seed": 42,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.12479224801063538,
+    "knn_overlap": 0.012794540667421332,
+    "seed_stability_ari": 1.0,
+    "selection_score": 0.3649550321388019,
+    "wall_time_seconds": 4.29,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.32485256892163566,
+    "nmi": 0.4179626223346483,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480404.1509423
+}

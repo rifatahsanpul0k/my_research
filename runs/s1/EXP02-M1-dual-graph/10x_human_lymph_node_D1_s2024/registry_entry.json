@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP02-M1-dual-graph",
+  "seed": 2024,
+  "model_type": "M1",
+  "metrics": {
+    "silhouette": 0.07837028801441193,
+    "knn_overlap": 0.004664343491580662,
+    "seed_stability_ari": 0.38044494648602906,
+    "selection_score": 0.1542514966513308,
+    "wall_time_seconds": 4.13,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.13926118338520832,
+    "nmi": 0.293918586448453,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479207.3976538
+}

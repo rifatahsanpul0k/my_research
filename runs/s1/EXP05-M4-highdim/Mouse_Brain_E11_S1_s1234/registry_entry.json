@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP05-M4-highdim",
+  "seed": 1234,
+  "model_type": "M4",
+  "metrics": {
+    "silhouette": 0.1957613229751587,
+    "knn_overlap": 0.0167249915017955,
+    "seed_stability_ari": 0.5917158635999807,
+    "selection_score": 0.2787404188679327,
+    "wall_time_seconds": 2.83,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.3305617365047461,
+    "nmi": 0.39209380690350637,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480177.4074693
+}

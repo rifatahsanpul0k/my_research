@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP10-loss-recon-only",
+  "seed": 1234,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.14302553236484528,
+    "knn_overlap": 0.010831916299194538,
+    "seed_stability_ari": 0.6436524084280054,
+    "selection_score": 0.2667748719706632,
+    "wall_time_seconds": 4.33,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.2620010485332531,
+    "nmi": 0.4150345661575541,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480376.2697253
+}

@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP13-fast-convergence",
+  "seed": 42,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.10838436335325241,
+    "knn_overlap": 0.014330111299560067,
+    "seed_stability_ari": 1.0,
+    "selection_score": 0.3570582039365382,
+    "wall_time_seconds": 3.38,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.33317365338628796,
+    "nmi": 0.4262845723399718,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480482.7864525
+}

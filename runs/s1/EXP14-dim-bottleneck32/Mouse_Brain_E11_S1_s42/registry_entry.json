@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP14-dim-bottleneck32",
+  "seed": 42,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.1324305385351181,
+    "knn_overlap": 0.01409546518073015,
+    "seed_stability_ari": 1.0,
+    "selection_score": 0.36903436230370507,
+    "wall_time_seconds": 4.05,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.3622607221213697,
+    "nmi": 0.41184329655796903,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480522.6370642
+}

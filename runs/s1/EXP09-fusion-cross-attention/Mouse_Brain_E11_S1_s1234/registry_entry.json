@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP09-fusion-cross-attention",
+  "seed": 1234,
+  "model_type": "attn_fusion",
+  "metrics": {
+    "silhouette": 0.20723450183868408,
+    "knn_overlap": 0.008971303721078478,
+    "seed_stability_ari": 0.4883227458168883,
+    "selection_score": 0.2519083354086242,
+    "wall_time_seconds": 3.4,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.3460622548307518,
+    "nmi": 0.44286315212760513,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480335.189748
+}

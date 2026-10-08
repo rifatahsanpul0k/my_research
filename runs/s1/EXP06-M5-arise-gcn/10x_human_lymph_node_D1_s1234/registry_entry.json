@@ -1,0 +1,20 @@
+{
+  "dataset": "10x_human_lymph_node_D1",
+  "exp_id": "EXP06-M5-arise-gcn",
+  "seed": 1234,
+  "model_type": "M5",
+  "metrics": {
+    "silhouette": 0.14002776145935059,
+    "knn_overlap": 0.002809972407861763,
+    "seed_stability_ari": 0.3407521644226449,
+    "selection_score": 0.1728015245380411,
+    "wall_time_seconds": 12.24,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.2022124312376451,
+    "nmi": 0.29226671284973005,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791479402.341333
+}

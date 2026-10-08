@@ -1,0 +1,20 @@
+{
+  "dataset": "Mouse_Brain_E11_S1",
+  "exp_id": "EXP01-M0-base-smart",
+  "seed": 2024,
+  "model_type": "M0",
+  "metrics": {
+    "silhouette": 0.15335653722286224,
+    "knn_overlap": 0.015643125148408134,
+    "seed_stability_ari": 0.5081464017605848,
+    "selection_score": 0.23225081416928817,
+    "wall_time_seconds": 2.2,
+    "unsupervised_selection_guarantee": true
+  },
+  "posthoc": {
+    "ari": 0.3280051924449948,
+    "nmi": 0.458361480168546,
+    "quarantined_reporting_only": true
+  },
+  "timestamp": 1791480042.2986677
+}
