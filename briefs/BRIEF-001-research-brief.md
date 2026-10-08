@@ -76,13 +76,13 @@ PULOK and Phoenix have already built most of the foundation (all paths relative 
 
 Each ships with `.h5ad` matrices, spatial coordinates in `obsm["spatial"]`, and annotation CSVs. **The annotation files are post-hoc-only** — the agent's data loader must expose them through a separate, clearly-marked channel that the selection code cannot import.
 
-### 3.2 Data locality problem (must be solved before automation starts)
+### 3.2 Data flow (DECIDED 2026-10-07)
 
-The datasets above live on **Phoenix's server VM, not on the Mac**. The local Antigravity agent cannot see them. Options:
+PULOK supplies the dataset Drive link(s). The agent downloads the data **once**, uploads it to Kaggle as a **private Kaggle dataset**, and every run executes on Kaggle against that dataset. Datasets are never downloaded twice — the Kaggle dataset is the single source of data; runs always mount it rather than re-fetching.
 
-- **(a) Copy to the Mac** (~600 MB total): Phoenix can package `smolab/` + `data/` for download; PULOK copies to e.g. `~/research/spatial-omics-lab/`. Simplest, recommended.
-- **(b) Re-download from original sources** on the Mac via the agent (Drive links need re-supply; E18 link is broken anyway).
-- **(c) New datasets from Kaggle** via the Kaggle MCP server (§8) to expand the pool — in *addition* to (a)/(b), not instead of them, unless PULOK explicitly wants a Kaggle-only study.
+- The Drive payload should contain all six datasets (A1, D1, E11, E13, E15, E18). E18's original link was truncated/broken — PULOK re-supplies it or the study proceeds with five.
+- Annotation CSVs ride along with the data but stay behind the post-hoc-only channel (§1).
+- Raw data never enters git (`.gitignore` already excludes `*.h5ad` and dataset dirs); only metrics, plots, configs, and reports are committed.
 
 ### 3.3 Preprocessing recipes (established 2026-09-30, keep as defaults)
 
@@ -145,6 +145,7 @@ The agent implements a closed loop — this is the core deliverable, not any sin
 - No silent config edits: every change is a new CONFIG + registry entry, never a mutation.
 - The agent **may not** "fix" poor silhouette by peeking at annotations. If it does, §1 is violated.
 - **Docs escalation:** when the agent needs documentation it cannot find or verify itself (API references, dataset provenance, credential setup), it stops and asks PULOK instead of guessing. PULOK is the documentation oracle; the agent never invents docs.
+- **Resume, never restart:** every completed run's result folder AND the updated `registry.jsonl` are committed and pushed to GitHub immediately — never batched. If a Kaggle runtime disconnects, the agent pulls the repo, reads the registry, and reruns ONLY the interrupted experiment (`skip_done=True` makes completed runs no-ops). Where practical, commit per-seed results incrementally so a mid-experiment disconnect loses at most one seed's work.
 - **Kaggle GPUs:** the free tier attaches ONE GPU per notebook session (typically a T4 or P100, ~30 h/week). The agent plans for one accelerator per run and budgets hours accordingly — it does not assume two GPUs are available to a single run. (Phoenix's own server has no GPU at all: 2 CPUs, 7 GB RAM — CPU-only orchestration and light configs only.)
 
 ---
@@ -153,7 +154,7 @@ The agent implements a closed loop — this is the core deliverable, not any sin
 
 | Stage | Job | Entry criterion |
 |---|---|---|
-| 0 | Environment + data setup: clone `smolab`, install `requirements.txt`, verify data dirs, run smoke test on synthetic data | PULOK confirms §9 decisions |
+| 0 | Data once: download from PULOK's Drive link → upload to Kaggle as a private dataset → verify the mount; clone `smolab`, install `requirements.txt`, smoke test | PULOK supplies the Drive link |
 | 1 | **Run the Phase 1 matrix** (15 exps, screening seeds) — the pending, already-designed sweep | Stage 0 green |
 | 2 | RAUS ranking of Phase 1; pick per-dataset-type winners | Registry complete |
 | 3 | Implement architectures **A–D** as smolab module compositions | PULOK picks order (or A→D) |
@@ -205,7 +206,7 @@ Antigravity supports MCP natively. On **PULOK's Mac**, in Antigravity:
 ## 9. Decisions PULOK must confirm (agent does not start before these)
 
 1. **Codebase:** extend `smolab` (recommended — firewall, registry, and Phase 1 matrix already exist) vs. fresh repo (agent reimplements the firewall first).
-2. **Data locality:** (a) Phoenix packages `smolab/` + `data/` (~600 MB) for download to the Mac, (b) agent re-downloads from sources, (c) Kaggle-only datasets.
+2. **Data flow:** DECIDED 2026-10-07 — Drive link → one-time upload to Kaggle as a private dataset → all runs mount it there. Never download twice.
 3. **E18:** re-supply the download link (the Drive folder ID was truncated — 32 vs 33 chars), or drop E18 from the study.
 4. **Compute budget:** how many CPU-hours on the MacBook Air before spilling to Colab/Kaggle GPUs? (Recommend: Stage 1 screening on Kaggle/Colab GPUs; Mac for orchestration and analysis.)
 5. **Run budget for the loop:** max configs and max wall-clock per stage — the loop's termination condition.

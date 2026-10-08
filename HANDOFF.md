@@ -30,6 +30,7 @@ spatial-omics-auto/
    - unresolved questions for PULOK (docs it couldn't verify — it asks, never invents)
 3. **Before every stage:** read the newest file in `briefs/` and acknowledge it in the report.
 4. **Firewall, always:** annotation labels never enter selection, tuning, or early stopping. `posthoc.json` is written by a separate code path that the selection code cannot import. Any violation → discard the run, log the incident in the report, continue.
+5. **Resume from GitHub, never from scratch:** push every result folder and the updated registry immediately after each run — never batch them. If the Kaggle runtime disconnects, pull the repo, find the last completed experiment in the registry, and rerun only what was interrupted.
 
 ## Phoenix's obligations
 
