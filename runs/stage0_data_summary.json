@@ -1,0 +1,20 @@
+{
+  "10x_human_lymph_node_D1/annotation.csv": 117120,
+  "10x_human_lymph_node_D1/adata_ADT.h5ad": 1103312,
+  "10x_human_lymph_node_D1/adata_RNA.h5ad": 31593546,
+  "Mouse_Brain_E15_S1/adata_ATAC.h5ad": 199891560,
+  "Mouse_Brain_E15_S1/anno.csv": 74128,
+  "Mouse_Brain_E15_S1/adata_RNA.h5ad": 57096330,
+  "Mouse_Brain_E11_S1/adata_ATAC.h5ad": 54105964,
+  "Mouse_Brain_E11_S1/anno.csv": 45308,
+  "Mouse_Brain_E11_S1/adata_RNA.h5ad": 28194962,
+  "Mouse_Brain_E18_S1/adata_ATAC.h5ad": 157199170,
+  "Mouse_Brain_E18_S1/anno.csv": 80889,
+  "Mouse_Brain_E18_S1/adata_RNA.h5ad": 40273370,
+  "Mouse_Brain_E13_S1/adata_ATAC.h5ad": 115767136,
+  "Mouse_Brain_E13_S1/anno.csv": 63372,
+  "Mouse_Brain_E13_S1/adata_RNA.h5ad": 45057114,
+  "10x_human_lymph_node_A1/annotation.csv": 114473,
+  "10x_human_lymph_node_A1/adata_ADT.h5ad": 1139080,
+  "10x_human_lymph_node_A1/adata_RNA.h5ad": 56563170
+}
