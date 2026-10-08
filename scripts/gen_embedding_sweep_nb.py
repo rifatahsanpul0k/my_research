@@ -211,19 +211,19 @@ def norm_adj(edge_index, n, device, with_loop=True):
 def build_graph(kind, coords, Xr, device):
     n = coords.shape[0]
     if kind == "spatial15":
-        ei = knn_edge_index(coords, 15)
+        ei = knn_edge_index(coords, 15).to(device)
         return dict(edge_index=ei, adj=norm_adj(ei, n, device, True),
                     adj_nl=norm_adj(ei, n, device, False), coords=torch.tensor(coords, dtype=torch.float32, device=device))
     if kind == "dual":
         e1 = knn_edge_index(coords, 15)
         Xp = PCA(n_components=16, random_state=0).fit_transform(Xr)
         e2 = knn_edge_index(Xp, 15)
-        ei = torch.cat([e1, e2], dim=1)
+        ei = torch.cat([e1, e2], dim=1).to(device)
         return dict(edge_index=ei, adj=norm_adj(ei, n, device, True),
                     adj_nl=norm_adj(ei, n, device, False), coords=torch.tensor(coords, dtype=torch.float32, device=device))
     if kind == "stague":
         # STAGUE-style learned structure: attention weights over spatial kNN candidates
-        ei = knn_edge_index(coords, 15)
+        ei = knn_edge_index(coords, 15).to(device)
         return dict(edge_index=ei, adj=None, adj_nl=None, learn_adj=True,
                     coords=torch.tensor(coords, dtype=torch.float32, device=device),
                     Xr_t=torch.tensor(Xr, dtype=torch.float32, device=device))
