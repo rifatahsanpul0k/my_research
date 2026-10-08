@@ -644,11 +644,13 @@ def seed_stability(all_labels):
 
 results = []
 t0 = time.time()
+print("preprocessing all datasets once (cached across combinations)...", flush=True)
+DATA_CACHE = {ds_id: load_dataset(ds_id) for ds_id in DATASETS}
 for combo_name, override in COMBINATIONS:
     cfg = dict(BASELINE); cfg.update(override)
     cfg["aug"] = list(override.get("aug", []))
     for ds_id in DATASETS:
-        data = load_dataset(ds_id)
+        data = DATA_CACHE[ds_id]
         k = data["k"]
         labels_per_seed, sils = {}, {}
         for seed in SEEDS:
