@@ -99,8 +99,16 @@ def git_push(paths, msg):
 '''))
 
 cells.append(code('''# ---------- data ----------
-DATA_CANDIDATES = ["/kaggle/input/spatial-multiomics-6datasets-private"]
-DATA_ROOT = next((p for p in DATA_CANDIDATES if os.path.isdir(p)), None)
+MARKER = "10x_human_lymph_node_A1"  # dataset folder expected directly under DATA_ROOT
+def find_data_root():
+    for base in ["/kaggle/input/spatial-multiomics-6datasets-private",
+                 "/kaggle/working/spatial-multiomics-6datasets-private",
+                 "/kaggle/working"]:
+        if os.path.isdir(os.path.join(base, MARKER)):
+            return base
+    return None
+
+DATA_ROOT = find_data_root()
 if DATA_ROOT is None:
     # fallback: download via Kaggle API (credentials from secrets)
     from kaggle_secrets import UserSecretsClient
@@ -111,7 +119,12 @@ if DATA_ROOT is None:
     os.chmod(os.path.join(kd, "kaggle.json"), 0o600)
     subprocess.run(["kaggle", "datasets", "download", "-d", "pulokpulok/spatial-multiomics-6datasets-private",
                     "-p", "/kaggle/working", "--unzip"], check=True)
-    DATA_ROOT = "/kaggle/working/spatial-multiomics-6datasets-private"
+    DATA_ROOT = find_data_root()
+if DATA_ROOT is None:
+    raise FileNotFoundError(
+        "dataset folders not found. Attach 'pulokpulok/spatial-multiomics-6datasets-private' via "
+        "Add data in the notebook UI, or check the download. /kaggle/working contains: "
+        + str(sorted(os.listdir("/kaggle/working"))))
 print("DATA_ROOT:", DATA_ROOT)
 
 DATASETS = {
