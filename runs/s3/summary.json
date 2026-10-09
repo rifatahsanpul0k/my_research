@@ -1,0 +1,210 @@
+{
+  "S3-BASE": [
+    {
+      "dataset": "A1",
+      "borda": 8
+    },
+    {
+      "dataset": "D1",
+      "borda": 14
+    },
+    {
+      "dataset": "E11",
+      "borda": 13
+    },
+    {
+      "dataset": "E13",
+      "borda": 11
+    },
+    {
+      "dataset": "E15",
+      "borda": 17
+    },
+    {
+      "dataset": "E18",
+      "borda": 10
+    }
+  ],
+  "S3-ABL-clus-idec": [
+    {
+      "dataset": "A1",
+      "borda": 8
+    },
+    {
+      "dataset": "D1",
+      "borda": 10
+    },
+    {
+      "dataset": "E11",
+      "borda": 8
+    },
+    {
+      "dataset": "E13",
+      "borda": 14
+    },
+    {
+      "dataset": "E15",
+      "borda": 13
+    },
+    {
+      "dataset": "E18",
+      "borda": 13
+    }
+  ],
+  "S3-ABL-clus-dec": [
+    {
+      "dataset": "A1",
+      "borda": 9
+    },
+    {
+      "dataset": "D1",
+      "borda": 17
+    },
+    {
+      "dataset": "E11",
+      "borda": 16
+    },
+    {
+      "dataset": "E13",
+      "borda": 15
+    },
+    {
+      "dataset": "E15",
+      "borda": 15
+    },
+    {
+      "dataset": "E18",
+      "borda": 17
+    }
+  ],
+  "S3-ABL-recon-pca30": [
+    {
+      "dataset": "A1",
+      "borda": 14
+    },
+    {
+      "dataset": "D1",
+      "borda": 18
+    },
+    {
+      "dataset": "E11",
+      "borda": 19
+    },
+    {
+      "dataset": "E13",
+      "borda": 13
+    },
+    {
+      "dataset": "E15",
+      "borda": 13
+    },
+    {
+      "dataset": "E18",
+      "borda": 12
+    }
+  ],
+  "S3-CAND-A-scot": [
+    {
+      "dataset": "A1",
+      "borda": 16
+    },
+    {
+      "dataset": "D1",
+      "borda": 15
+    },
+    {
+      "dataset": "E11",
+      "borda": 11
+    },
+    {
+      "dataset": "E13",
+      "borda": 11
+    },
+    {
+      "dataset": "E15",
+      "borda": 5
+    },
+    {
+      "dataset": "E18",
+      "borda": 10
+    }
+  ],
+  "S3-CAND-C-gat": [
+    {
+      "dataset": "A1",
+      "borda": 16
+    },
+    {
+      "dataset": "D1",
+      "borda": 5
+    },
+    {
+      "dataset": "E11",
+      "borda": 12
+    },
+    {
+      "dataset": "E13",
+      "borda": 13
+    },
+    {
+      "dataset": "E15",
+      "borda": 17
+    },
+    {
+      "dataset": "E18",
+      "borda": 14
+    }
+  ],
+  "S3-CAND-B-uaf": [
+    {
+      "dataset": "A1",
+      "borda": 17
+    },
+    {
+      "dataset": "D1",
+      "borda": 12
+    },
+    {
+      "dataset": "E11",
+      "borda": 15
+    },
+    {
+      "dataset": "E13",
+      "borda": 15
+    },
+    {
+      "dataset": "E15",
+      "borda": 11
+    },
+    {
+      "dataset": "E18",
+      "borda": 15
+    }
+  ],
+  "S3-ABL-recon-hvg3000": [
+    {
+      "dataset": "A1",
+      "borda": 20
+    },
+    {
+      "dataset": "D1",
+      "borda": 17
+    },
+    {
+      "dataset": "E11",
+      "borda": 14
+    },
+    {
+      "dataset": "E13",
+      "borda": 16
+    },
+    {
+      "dataset": "E15",
+      "borda": 17
+    },
+    {
+      "dataset": "E18",
+      "borda": 17
+    }
+  ]
+}
