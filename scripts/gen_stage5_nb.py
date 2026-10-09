@@ -357,8 +357,26 @@ def dec_refine(Z, k, seed, iters=100, lr=1e-2):
 
 cells.append(code('''# ---------- model ----------
 LAM_SPA, LAM_ALIGN, LAM_KL = 2.0, 0.5, 0.1   # LAM_SPA overridable per-combo; Stage 5 base uses 0.1
-LAM_DIS = 0.1   # shared-private disentanglement weight
+LAM_DIS = 0.1   # shared-private disentanglement weight (base; adaptive version scales it)
 MORAN = {}      # ds_id -> Moran's I (label-free spatial autocorrelation), filled in precompute
+XMODAL = {}     # ds_id -> cross-modal kNN agreement in [0,1], filled in precompute
+
+def cross_modal_agreement(Xr, Xa, k=15):
+    # Label-free: how much do RNA and aux agree on local neighborhoods?
+    # High agreement = redundant modalities (don't force a split); low = complementary (split helps).
+    from sklearn.neighbors import NearestNeighbors
+    ir = NearestNeighbors(n_neighbors=k + 1).fit(Xr).kneighbors(Xr, return_distance=False)[:, 1:]
+    ia = NearestNeighbors(n_neighbors=k + 1).fit(Xa).kneighbors(Xa, return_distance=False)[:, 1:]
+    ov = [len(set(ir[i]) & set(ia[i])) / max(len(set(ir[i]) | set(ia[i])), 1) for i in range(len(Xr))]
+    return float(np.mean(ov))
+
+def resolve_lam_dis(cfg, data):
+    # Adaptive disentanglement: scale λ_dis by cross-modal DISagreement.
+    # Redundant modalities (high agreement) -> keep them together; complementary -> split.
+    if cfg.get("adapt_disentangle") and XMODAL:
+        A = XMODAL[data["_ds"]]
+        return 0.2 * (1.0 - A)
+    return LAM_DIS
 
 def moran_I(x, edge_index, n):
     # Moran's I for one feature vector (numpy). Label-free spatial autocorrelation in [-1, 1].
@@ -405,7 +423,7 @@ class S3Model(nn.Module):
                  + 0.5 * torch.exp(-self.logvar_a) * la + 0.5 * self.logvar_a
         return lr + la
 
-    def loss(self, out, tr, ta, g, lam_spa):
+    def loss(self, out, tr, ta, g, lam_spa, lam_dis):
         z, zr, za = out
         L = self.recon_loss(z, tr, ta)
         if self.cfg.get("spatial") == "laplacian":
@@ -434,7 +452,7 @@ class S5SPModel(nn.Module):
         z = torch.cat([zs, zpr, zpa], dim=1)
         return z, zs, zpr, zpa
 
-    def loss(self, out, tr, ta, g, lam_spa):
+    def loss(self, out, tr, ta, g, lam_spa, lam_dis):
         z, zs, zpr, zpa = out
         lr = F.mse_loss(self.dec_r(z), tr); la = F.mse_loss(self.dec_a(z), ta)
         if self.cfg.get("adapt_modality"):
@@ -448,7 +466,7 @@ class S5SPModel(nn.Module):
             c = (a * b).sum(1) / (a.norm(dim=1) * b.norm(dim=1) + 1e-8)
             return (c ** 2).mean()
         zpriv = torch.cat([zpr, zpa], dim=1)
-        L = L + LAM_DIS * cos2(zs, zpriv)
+        L = L + lam_dis * cos2(zs, zpriv)
         if self.cfg.get("spatial") == "laplacian":
             L = L + lam_spa * laplacian_loss(z, g["edge_index"])
         return L
@@ -484,7 +502,7 @@ class S5SPSageModel(nn.Module):
         z = torch.cat([zs, zpr, zpa], dim=1)
         return z, zs, zpr, zpa
 
-    def loss(self, out, tr, ta, g, lam_spa):
+    def loss(self, out, tr, ta, g, lam_spa, lam_dis):
         z, zs, zpr, zpa = out
         lr = F.mse_loss(self.dec_r(z), tr); la = F.mse_loss(self.dec_a(z), ta)
         if self.cfg.get("adapt_modality"):
@@ -497,7 +515,7 @@ class S5SPSageModel(nn.Module):
                 c = (a * b).sum(1) / (a.norm(dim=1) * b.norm(dim=1) + 1e-8)
                 return (c ** 2).mean()
             zpriv = torch.cat([zpr, zpa], dim=1)
-            L = L + LAM_DIS * cos2(zs, zpriv)
+            L = L + lam_dis * cos2(zs, zpriv)
         if self.cfg.get("spatial") == "laplacian":
             L = L + lam_spa * laplacian_loss(z, g["edge_index"])
         return L
@@ -525,6 +543,7 @@ COMBINATIONS = [
     ("S5N-generalized",     dict(adapt_spatial=True, adapt_modality=True, model="shared_private")),
     ("S5N-SP-sage",         dict(model="shared_private_sage")),
     ("S5N-SP-sage-nodis",   dict(model="shared_private_sage", disentangle=False)),
+    ("S5N-SP-sage-adapt",   dict(model="shared_private_sage", adapt_disentangle=True)),
 ]
 print(f"{len(COMBINATIONS)} combinations registered")
 '''))
@@ -552,6 +571,7 @@ def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
     tr = torch.tensor(tr_np, device=DEVICE)
     ta = xa
     lam_spa = resolve_lam_spa(cfg, data)   # fixed or Moran's-I adaptive
+    lam_dis = resolve_lam_dis(cfg, data)   # fixed or cross-modal-agreement adaptive
     ModelCls = {"shared_private": S5SPModel,
                 "shared_private_sage": S5SPSageModel}.get(cfg.get("model"), S3Model)
     model = ModelCls(data["Xr"].shape[1], data["Xa"].shape[1], cfg, d_rr).to(DEVICE)
@@ -563,7 +583,7 @@ def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
         opt.zero_grad()
         out = model(xr, xa, g)
         z = out[0]
-        loss = model.loss(out, tr, ta, g, lam_spa)
+        loss = model.loss(out, tr, ta, g, lam_spa, lam_dis)
         if kl_head:  # IDEC: joint KL + recon
             if ep % 25 == 0 or mu is None:
                 with torch.no_grad():
@@ -628,6 +648,11 @@ for ds_id in DATASETS:
     MORAN[ds_id] = float(np.mean(Is))
     print(f"  {ds_id}: Moran's I = {MORAN[ds_id]:.3f}", flush=True)
 print(f"  mean I = {sum(MORAN.values())/len(MORAN):.3f} (adaptive λ_spa anchors here)", flush=True)
+print("computing cross-modal kNN agreement per dataset (label-free)...", flush=True)
+for ds_id in DATASETS:
+    d = DATA_CACHE[ds_id]
+    XMODAL[ds_id] = cross_modal_agreement(d["Xr"], d["Xa"], k=15)
+    print(f"  {ds_id}: agreement = {XMODAL[ds_id]:.3f} -> λ_dis = {0.2*(1-XMODAL[ds_id]):.3f}", flush=True)
 for combo_name, override in COMBINATIONS:
     cfg = dict(BASE_CFG); cfg.update(override)
     for ds_id in DATASETS:
