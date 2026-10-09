@@ -489,6 +489,51 @@ class SAGELayer(nn.Module):
         agg = torch.sparse.mm(g["adj_nl"], x)
         return self.lin(torch.cat([x, agg], 1)).relu()
 
+class S6OneModel(nn.Module):
+    # THE ONE MODEL: Gated Dual-Path Shared-Private.
+    # Per modality: SAGE graph path + MLP feature path, blended by a LEARNED per-spot
+    # sigmoid gate (SpaHDSRL-style). The gate learns unsupervised whether the spatial
+    # graph helps (brain: gate->1) or hurts (lymph node: gate->0). Shared-private
+    # split on the blended embeddings. One architecture, one config, zero switches.
+    def __init__(self, d_rna, d_aux, cfg, d_recon_rna):
+        super().__init__()
+        self.cfg = cfg
+        self.sage_r = SAGELayer(d_rna, 32)
+        self.mlp_r = nn.Sequential(nn.Linear(d_rna, 32), nn.ReLU())
+        self.sage_a = SAGELayer(d_aux, 32)
+        self.mlp_a = nn.Sequential(nn.Linear(d_aux, 32), nn.ReLU())
+        self.gate_r = nn.Linear(32, 1)
+        self.gate_a = nn.Linear(32, 1)
+        self.lin_s = nn.Linear(64, 16)
+        self.lin_pr = nn.Linear(32, 8)
+        self.lin_pa = nn.Linear(32, 8)
+        self.dec_r = nn.Linear(32, d_recon_rna)
+        self.dec_a = nn.Linear(32, d_aux)
+
+    def forward(self, xr, xa, g):
+        hr_g = self.sage_r(xr, g); hr_f = self.mlp_r(xr)
+        ha_g = self.sage_a(xa, g); ha_f = self.mlp_a(xa)
+        ar = torch.sigmoid(self.gate_r(hr_g))   # per-spot, learned
+        aa = torch.sigmoid(self.gate_a(ha_g))
+        hr = ar * hr_g + (1 - ar) * hr_f
+        ha = aa * ha_g + (1 - aa) * ha_f
+        zs = self.lin_s(torch.cat([hr, ha], dim=1))
+        zpr = self.lin_pr(hr); zpa = self.lin_pa(ha)
+        z = torch.cat([zs, zpr, zpa], dim=1)
+        return z, zs, zpr, zpa, ar, aa
+
+    def loss(self, out, tr, ta, g, lam_spa, lam_dis):
+        z, zs, zpr, zpa, ar, aa = out
+        lr = F.mse_loss(self.dec_r(z), tr); la = F.mse_loss(self.dec_a(z), ta)
+        L = lr + la
+        def cos2(a, b):
+            c = (a * b).sum(1) / (a.norm(dim=1) * b.norm(dim=1) + 1e-8)
+            return (c ** 2).mean()
+        zpriv = torch.cat([zpr, zpa], dim=1)
+        L = L + lam_dis * cos2(zs, zpriv)
+        # No Laplacian loss: the gate IS the spatial mechanism (learned, per-spot).
+        return L
+
 class S5SPSageModel(nn.Module):
     # Shared-private disentanglement WITH graph convolutions (clean test: the Stage-5
     # SP model used plain MLPs, confounding disentanglement with encoder change).
@@ -556,6 +601,7 @@ COMBINATIONS = [
     ("S5N-dis005",          dict(model="shared_private_sage", lam_dis=0.05)),
     ("S5N-dis04",           dict(model="shared_private_sage", lam_dis=0.4)),
     ("S5N-nograph",         dict(model="shared_private_sage", spatial="none")),
+    ("S6-ONE",              dict(model="one_model", lam_dis=0.15)),
 ]
 print(f"{len(COMBINATIONS)} combinations registered")
 '''))
@@ -585,7 +631,8 @@ def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
     lam_spa = resolve_lam_spa(cfg, data)   # fixed or Moran's-I adaptive
     lam_dis = resolve_lam_dis(cfg, data)   # fixed or cross-modal-agreement adaptive
     ModelCls = {"shared_private": S5SPModel,
-                "shared_private_sage": S5SPSageModel}.get(cfg.get("model"), S3Model)
+                "shared_private_sage": S5SPSageModel,
+                "one_model": S6OneModel}.get(cfg.get("model"), S3Model)
     model = ModelCls(data["Xr"].shape[1], data["Xa"].shape[1], cfg, d_rr).to(DEVICE)
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     mu = None
@@ -610,14 +657,17 @@ def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
         out = model(xr, xa, g)
         z = out[0]
         r2r = float(r2_score(model.dec_r(z), tr)); r2a = float(r2_score(model.dec_a(z), ta))
-    return z.detach().cpu().numpy(), r2r, r2a, (mu.detach() if mu is not None else None), lam_spa
+        gate = None
+        if cfg.get("model") == "one_model" and len(out) >= 6:
+            gate = {"rna": float(out[4].mean()), "aux": float(out[5].mean())}
+    return z.detach().cpu().numpy(), r2r, r2a, (mu.detach() if mu is not None else None), lam_spa, gate
 
 def run_combo(combo_name, cfg, data, seed):
     t0 = time.time()
     g = build_graph(data["coords"], DEVICE)
     k = data["k"]
     head = cfg.get("head", "kmeans")
-    Z, r2r, r2a, mu, lam_used = train_embed(cfg, data, g, seed, kl_head=(head == "idec"))
+    Z, r2r, r2a, mu, lam_used, gate = train_embed(cfg, data, g, seed, kl_head=(head == "idec"))
     km_labels = KMeans(n_clusters=k, n_init=10, random_state=seed).fit(Z).labels_
     sil = float(silhouette_score(Z, km_labels))
     recbal = recon_balance(r2r, r2a)
@@ -637,7 +687,9 @@ def run_combo(combo_name, cfg, data, seed):
     np.save(os.path.join(d, "labels.npy"), out_labels)
     metrics = {"silhouette": sil, "reconstruction_balance": recbal,
                "r2_rna": r2r, "r2_aux": r2a, "k": k, "lam_spa_used": round(float(lam_used), 4),
-               "wall_time_seconds": round(time.time() - t0, 2), **extra}
+               "wall_time_seconds": round(time.time() - t0, 2),
+               **({"gate_rna": round(gate["rna"], 3), "gate_aux": round(gate["aux"], 3)} if gate else {}),
+               **extra}
     json.dump(metrics, open(os.path.join(d, "metrics.json"), "w"), indent=2)
     json.dump({"ari": post_ari, "quarantined_reporting_only": True},
               open(os.path.join(d, "posthoc.json"), "w"), indent=2)
