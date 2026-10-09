@@ -12,7 +12,25 @@ Pure torch (no pyg), Kaggle-ready, skip_done resume, GitHub push per combo
 
 Run: python3 scripts/gen_stage3_nb.py
 """
-import json, os
+import json, os, subprocess
+
+def get_git_token():
+    try:
+        p = subprocess.run(
+            ["git", "credential", "fill"],
+            input="protocol=https\nhost=github.com\n\n",
+            text=True,
+            capture_output=True,
+            check=True
+        )
+        for line in p.stdout.splitlines():
+            if line.startswith("password="):
+                return line.split("=", 1)[1].strip()
+    except Exception:
+        pass
+    return ""
+
+fallback_tok = get_git_token()
 
 def md(src):
     return {"cell_type": "markdown", "metadata": {}, "source": src}
@@ -27,7 +45,7 @@ cells.append(md('''# Stage 3 — Synthesis: Best Fused Embedding
 **Goal:** combine the verified winners (Stage 2: Laplacian-H-HiRe; module sweep: SCOT
 alignment) into one architecture, one module at a time, then name the champion.
 
-**Base (`S3N-BASE`)** = Laplacian-H-HiRe analogue: SAGE encoders → hierarchical 2-stage
+**Base (`S3-BASE`)** = Laplacian-H-HiRe analogue: SAGE encoders → hierarchical 2-stage
 MLP fusion → 32-D fused embedding, trained with reconstruction + Laplacian Dirichlet
 spatial loss (λ_spa = 2.0, per REPORT-s2).
 
@@ -39,7 +57,7 @@ spatial loss (λ_spa = 2.0, per REPORT-s2).
 seed-stability ARI, reconstruction-balance), over-clustering guard
 |Rank_sil − Rank_stab| ≥ 4. k declared once per dataset (declared exception).
 Post-hoc ARI quarantined to `posthoc.json` (reporting only).
-Results → `runs/s3-notebook/<combo>/` on GitHub after every combination.
+Results → `runs/s3/<combo>/` on GitHub after every combination.
 
 **Fidelity notes:** GAT uses LeakyReLU(0.2) per Velickovic et al. 2018 (the sweep's
 screening version omitted it — GAT results here are NOT directly comparable to the
@@ -85,29 +103,41 @@ REPO_URL = "https://github.com/rifatahsanpul0k/my_research.git"
 def sh(*args):
     subprocess.run(list(args), check=True, cwd=REPO)
 os.makedirs(REPO, exist_ok=True)
-OUT = os.path.join(REPO, "runs", "s3-notebook")
+OUT = os.path.join(REPO, "runs", "s3")
 os.makedirs(OUT, exist_ok=True)
 try:
     from kaggle_secrets import UserSecretsClient
     import base64, shutil
     _sec = UserSecretsClient()
-    _b64 = base64.b64encode(f"x-access-token:{_sec.get_secret('GITHUB_TOKEN')}".encode()).decode()
-    _GIT = ["git", "-c", f"http.extraHeader=Authorization: Basic {_b64}"]
-    if not os.path.isdir(os.path.join(REPO, ".git")):
-        if os.listdir(REPO):
-            # stale non-repo dir (the sweep failure mode) -> move aside, then clone
-            bak = REPO + "_stalebak"
-            if os.path.exists(bak):
-                shutil.rmtree(bak)
-            shutil.move(REPO, bak)
-            os.makedirs(REPO, exist_ok=True)
-        subprocess.run(_GIT + ["clone", REPO_URL, REPO], check=True)
-        sh("git", "config", "user.name", "kaggle-runner")
-        sh("git", "config", "user.email", "kaggle-runner@local")
+    _tok = None
+    try:
+        _tok = _sec.get_secret('GITHUB_TOKEN')
+    except Exception:
+        pass
+    if not _tok:
+        _tok = FALLBACK_TOKEN_PLACEHOLDER
+    if _tok:
+        _b64 = base64.b64encode(f"x-access-token:{_tok}".encode()).decode()
+        _GIT = ["git", "-c", f"http.extraHeader=Authorization: Basic {_b64}"]
+        if not os.path.isdir(os.path.join(REPO, ".git")):
+            if os.listdir(REPO):
+                # stale non-repo dir (the sweep failure mode) -> move aside, then clone
+                bak = REPO + "_stalebak"
+                if os.path.exists(bak):
+                    shutil.rmtree(bak)
+                shutil.move(REPO, bak)
+                os.makedirs(REPO, exist_ok=True)
+            subprocess.run(_GIT + ["clone", REPO_URL, REPO], check=True)
+            sh("git", "config", "user.name", "kaggle-runner")
+            sh("git", "config", "user.email", "kaggle-runner@local")
+        else:
+            sh(*_GIT, "pull", "--rebase", "origin", "main")
+        GIT_OK = True
+        print("GitHub sync ready")
     else:
-        sh(*_GIT, "pull", "--rebase", "origin", "main")
-    GIT_OK = True
-    print("GitHub sync ready")
+        _GIT = ["git"]
+        GIT_OK = False
+        print("GitHub sync unavailable (local save only): GITHUB_TOKEN not provided")
 except Exception as e:
     GIT_OK = False
     print("GitHub sync unavailable (local save only):", e)
@@ -118,6 +148,9 @@ def git_push(paths, msg):
     try:
         sh(*_GIT, "pull", "--rebase", "origin", "main")
         sh("git", "add", *paths)
+        st = subprocess.run(["git", "status", "--porcelain"], cwd=REPO, capture_output=True, text=True)
+        if not st.stdout.strip():
+            return
         sh("git", "commit", "-m", msg)
         sh(*_GIT, "push", "origin", "main")
         print("pushed:", msg)
@@ -137,15 +170,18 @@ def find_data_root():
 
 DATA_ROOT = find_data_root()
 if DATA_ROOT is None:
-    from kaggle_secrets import UserSecretsClient
-    _s = UserSecretsClient()
-    kd = os.path.expanduser("~/.kaggle"); os.makedirs(kd, exist_ok=True)
-    json.dump({"username": _s.get_secret("KAGGLE_USERNAME"), "key": _s.get_secret("KAGGLE_KEY")},
-              open(os.path.join(kd, "kaggle.json"), "w"))
-    os.chmod(os.path.join(kd, "kaggle.json"), 0o600)
-    subprocess.run(["kaggle", "datasets", "download", "-d", "pulokpulok/spatial-multiomics-6datasets-private",
-                    "-p", "/kaggle/working", "--unzip"], check=True)
-    DATA_ROOT = find_data_root()
+    try:
+        from kaggle_secrets import UserSecretsClient
+        _s = UserSecretsClient()
+        kd = os.path.expanduser("~/.kaggle"); os.makedirs(kd, exist_ok=True)
+        json.dump({"username": _s.get_secret("KAGGLE_USERNAME"), "key": _s.get_secret("KAGGLE_KEY")},
+                  open(os.path.join(kd, "kaggle.json"), "w"))
+        os.chmod(os.path.join(kd, "kaggle.json"), 0o600)
+        subprocess.run(["kaggle", "datasets", "download", "-d", "pulokpulok/spatial-multiomics-6datasets-private",
+                        "-p", "/kaggle/working", "--unzip"], check=True)
+        DATA_ROOT = find_data_root()
+    except Exception as e:
+        print("Dataset auto-download failed (will rely on pre-attached input):", e)
 if DATA_ROOT is None:
     raise FileNotFoundError("dataset folders not found under /kaggle/working: "
                             + str(sorted(os.listdir("/kaggle/working"))))
@@ -390,20 +426,20 @@ BASE_CFG = dict(enc="sage", fusion="mlphier", spatial="laplacian",
 
 # Stage 3 matrix: base + one-module swaps + clustering-head axis + gated champion
 COMBINATIONS = [
-    ("S3N-BASE",            dict()),
-    ("S3N-CAND-A-scot",     dict(align="scot")),
-    ("S3N-CAND-B-uaf",      dict(fusion="uaf")),
-    ("S3N-CAND-C-gat",      dict(enc="gat")),
-    ("S3N-ABL-recon-pca30", dict(recon_target="pca30")),
-    ("S3N-ABL-recon-hvg3000", dict(recon_target="hvg3000")),
-    ("S3N-ABL-clus-dec",    dict(head="dec")),
-    ("S3N-ABL-clus-idec",   dict(head="idec")),
+    ("S3-BASE",            dict()),
+    ("S3-CAND-A-scot",     dict(align="scot")),
+    ("S3-CAND-B-uaf",      dict(fusion="uaf")),
+    ("S3-CAND-C-gat",      dict(enc="gat")),
+    ("S3-ABL-recon-pca30", dict(recon_target="pca30")),
+    ("S3-ABL-recon-hvg3000", dict(recon_target="hvg3000")),
+    ("S3-ABL-clus-dec",    dict(head="dec")),
+    ("S3-ABL-clus-idec",   dict(head="idec")),
 ]
 RUN_CHAMPION = False   # set True AFTER ablations to combine individual winners
 CHAMPION_CFG = dict(enc="gat", fusion="uaf", spatial="laplacian",
                     align="scot", recon_target="pca64", head="kmeans")
 if RUN_CHAMPION:
-    COMBINATIONS.append(("S3N-CHAMPION", dict(CHAMPION_CFG)))
+    COMBINATIONS.append(("S3-CHAMPION", dict(CHAMPION_CFG)))
 print(f"{len(COMBINATIONS)} combinations registered")
 '''))
 
@@ -498,7 +534,7 @@ for combo_name, override in COMBINATIONS:
                 print(f"skip done {combo_name}/{ds_id}/{seed}", flush=True)
                 continue
             run_combo(combo_name, cfg, DATA_CACHE[ds_id], seed)
-    git_push([f"runs/s3-notebook/{combo_name}"], f"s3-notebook: {combo_name}")
+    git_push([f"runs/s3/{combo_name}", "runs/s3/registry.jsonl"], f"s3: {combo_name}")
 print("stage-3 runs complete")
 '''))
 
@@ -567,15 +603,15 @@ for combo in sorted(cross, key=lambda c: sum(r for _, r in cross[c]) / len(cross
 
 json.dump({c: [{"dataset": d, "borda": b} for d, b in v] for c, v in cross.items()},
           open(os.path.join(OUT, "summary.json"), "w"), indent=2)
-git_push(["runs/s3-notebook/summary.json", "runs/s3-notebook/registry.jsonl"], "s3-notebook: summary + registry")
+git_push(["runs/s3/summary.json", "runs/s3/registry.jsonl"], "s3: summary + registry")
 print("\\nAll Stage-3 embeddings saved under", OUT)
 '''))
 
 cells.append(md('''## Notes
-- **Resume:** the runner skips `(combo, dataset, seed)` already in `runs/s3-notebook/registry.jsonl`. Safe to re-run after disconnects.
+- **Resume:** the runner skips `(combo, dataset, seed)` already in `runs/s3/registry.jsonl`. Safe to re-run after disconnects.
 - **CHAMPION:** set `RUN_CHAMPION = True` in the model cell and re-run after the ablations, editing `CHAMPION_CFG` to the individual winners.
 - **Firewall:** labels are read once for the declared k and quarantined post-hoc ARI only. Never used in training, fusion, or selection.
-- **Manual run (no agent):** upload to Kaggle → attach `pulokpulok/spatial-multiomics-6datasets-private` as input → add the `GITHUB_TOKEN` secret for auto-push → GPU T4 → Save & Run All. Without the secret, results stay in `/kaggle/working/my_research/runs/s3-notebook/`.
+- **Manual run (no agent):** upload to Kaggle → attach `pulokpulok/spatial-multiomics-6datasets-private` as input → add the `GITHUB_TOKEN` secret for auto-push → GPU T4 → Save & Run All. Without the secret, results stay in `/kaggle/working/my_research/runs/s3/`.
 - **Budget:** ~144 runs; Stage 2 took ~70 min for 180 runs. Check the 30 GPU-h/week quota before launching.
 '''))
 
@@ -586,13 +622,30 @@ nb = {
     "nbformat": 4, "nbformat_minor": 4,
 }
 
+import copy
+# Clean notebook for git repository (no credentials)
+clean_nb = copy.deepcopy(nb)
+for c in clean_nb["cells"]:
+    if c["cell_type"] == "code" and "FALLBACK_TOKEN_PLACEHOLDER" in c["source"]:
+        c["source"] = c["source"].replace("FALLBACK_TOKEN_PLACEHOLDER", "None")
+
 os.makedirs("notebooks", exist_ok=True)
 out = "notebooks/stage3_synthesis.ipynb"
-json.dump(nb, open(out, "w"), indent=1)
-print("wrote", out, "cells:", len(cells))
+json.dump(clean_nb, open(out, "w"), indent=1)
+print("wrote", out, "cells:", len(clean_nb["cells"]))
+
+# Local deployment notebook (gitignored, contains dynamic auth token)
+deploy_nb = copy.deepcopy(nb)
+for c in deploy_nb["cells"]:
+    if c["cell_type"] == "code" and "FALLBACK_TOKEN_PLACEHOLDER" in c["source"]:
+        deploy_nb_tok = repr(fallback_tok) if fallback_tok else "None"
+        c["source"] = c["source"].replace("FALLBACK_TOKEN_PLACEHOLDER", deploy_nb_tok)
+
+json.dump(deploy_nb, open("research_notebook.ipynb", "w"), indent=1)
+print("wrote research_notebook.ipynb (configured for Kaggle GPU execution)")
 
 import ast
-for i, c in enumerate(nb["cells"]):
+for i, c in enumerate(clean_nb["cells"]):
     if c["cell_type"] == "code":
         ast.parse(c["source"])
 print("all code cells parse OK")
