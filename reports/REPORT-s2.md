@@ -23,7 +23,7 @@ $$\text{Borda Rank} = \text{Rank}(\text{Silhouette}) + \text{Rank}(\text{Seed St
 Across all six datasets, **`S2-EXP09-ABL-spa-laplacian` (Graph Laplacian Dirichlet Energy Regularization with Hierarchical 2-Stage MLP Fusion)** achieved decisive cross-dataset superiority:
 - Placed **#1 or #2 on 4 of 6 datasets**, and **top-4 across all six datasets without exception** (A1 #1, D1 #2, E11 #4, E13 #1, E15 #3, E18 #1).
 - Average cross-dataset rank of **2.00**, outperforming all other architectures.
-- Resolved the over-clustering pathology of Stage 1: Dirichlet smoothness maintains physical tissue continuity without collapsing distinct cell types into artificial hyperspheres.
+- Reduced the over-clustering pathology of Stage 1: Dirichlet smoothness maintains physical tissue continuity without collapsing distinct cell types into artificial hyperspheres.
 
 ---
 
@@ -144,7 +144,7 @@ Evaluating across all 6 datasets (CITE-seq and ATAC-seq developmental series):
 | Overall Rank | Exp ID | Architecture Description | Avg Borda Rank | A1 | D1 | E11 | E13 | E15 | E18 | Avg Post-Hoc ARI | Flags Raised |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | **#1** | **`S2-EXP09-ABL-spa-laplacian`** | **H-HiRe + Graph Laplacian Regularization** | **2.00** | **#1** | **#2** | **#4** | **#1** | **#3** | **#1** | **0.173** | 4 |
-| #2 | `S2-EXP02-CAND-Attn-SAGE` | Cross-Attention + SAGEConv | 3.83 | #4 | #7 | #2 | #3 | #5 | #2 | 0.110 | 5 |
+| #2 | `S2-EXP02-CAND-Attn-SAGE` | Cross-Attention + SAGEConv | 3.83 | #4 | #7 | #2 | #3 | #5 | #2 | 0.110 | 6 |
 | #3 | `S2-EXP10-ABL-backbone-gat` | Cross-Attention + GAT Backbone | 4.00 | #2 | #8 | #3 | #6 | #2 | #3 | 0.137 | 2 |
 | #4 | `S2-EXP05-ABL-recon-pca30` | H-HiRe with PCA-30 Reconstruction | 4.17 | #5 | #10 | #1 | #2 | #1 | #6 | 0.187 | 1 |
 | #5 | `S2-EXP03-CAND-Gated-ARISE` | Dynamic Edge-Gated GCNConv | 4.50 | #3 | #3 | #6 | #4 | #6 | #5 | **0.173** | 0 |
@@ -180,8 +180,8 @@ Evaluating across all 6 datasets (CITE-seq and ATAC-seq developmental series):
 
 Per BRIEF-005, we explicitly tracked the divergence $|\text{Rank}_{\text{sil}} - \text{Rank}_{\text{stab}}| \ge 4$ to detect when high silhouette is driven by artificial geometric compression:
 
-1. **`S2-EXP02-CAND-Attn-SAGE`:** Raised the over-clustering flag on **5 out of 6 datasets** (A1, D1, E11, E13, E18). On E18, it achieved Silhouette rank #2 (0.311) but stability rank #7 (0.250), with its biological ARI collapsing to **0.024**. The attention mechanism created tight localized islands in latent space that were highly unstable across random seeds.
-2. **`S2-EXP03-CAND-Gated-ARISE`:** Raised **zero flags across all six datasets**, maintaining balanced alignment between silhouette and cross-seed stability. It achieved an average post-hoc ARI of **0.173** (tying the top score).
+1. **`S2-EXP02-CAND-Attn-SAGE`:** Raised the over-clustering flag on **6 out of 6 datasets** (A1, D1, E11, E13, E15, E18). On E18, it achieved Silhouette rank #2 (0.311) but stability rank #7 (0.250), with its biological ARI collapsing to **0.024**. The attention mechanism created tight localized islands in latent space that were highly unstable across random seeds.
+2. **`S2-EXP03-CAND-Gated-ARISE`:** Raised **zero flags across all six datasets**, maintaining balanced alignment between silhouette and cross-seed stability. It achieved an average post-hoc ARI of **0.173** (second highest among architectures, after PCA-30's 0.187).
 3. **`S2-EXP09-ABL-spa-laplacian`:** Showed moderate stability-rank divergence on E11 and E15, but achieved the highest cross-dataset rank and consistent post-hoc ARI (0.205 on A1, 0.268 on E15, 0.193 on E18).
 
 ---
@@ -195,7 +195,7 @@ Per BRIEF-005, we explicitly tracked the divergence $|\text{Rank}_{\text{sil}} -
 - **Evidence:** Ranked #1, #2, #4, #1, #3, #1 across the six datasets (average rank 2.00).
 
 ### Robust Baseline Runner-Up: `Gated-ARISE` (`S2-EXP03`)
-- **Evidence:** Most consistent stability profile across all six datasets (zero over-clustering flags raised, average rank 4.50, tying for highest average post-hoc ARI).
+- **Evidence:** Most consistent stability profile across all six datasets (zero over-clustering flags raised, average rank 4.50, average post-hoc ARI 0.173).
 
 ---
 
