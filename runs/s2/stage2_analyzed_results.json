@@ -1,0 +1,1094 @@
+{
+  "10x_human_lymph_node_A1": {
+    "S2-EXP01-CAND-H-HiRe": {
+      "sil_mean": 0.10420667131741841,
+      "sil_std": 0.0024032686963899154,
+      "seed_stability_mean": 0.3732110148255656,
+      "seed_stability_pairs": [
+        0.48445650182337885,
+        0.23064527043643834,
+        0.4045312722168796
+      ],
+      "recon_balance_mean": 0.0275192889056802,
+      "recon_balance_std": 0.00702644120320579,
+      "knn_mean": 0.0037887313197275895,
+      "knn_std": 0.0004894050167075577,
+      "posthoc_ari_mean": 0.2502880108728986,
+      "posthoc_ari_std": 0.03338169286109973,
+      "posthoc_nmi_mean": 0.33924200442561725,
+      "posthoc_nmi_std": 0.014821259758047725
+    },
+    "S2-EXP02-CAND-Attn-SAGE": {
+      "sil_mean": 0.4427833358446757,
+      "sil_std": 0.04873279062171131,
+      "seed_stability_mean": 0.3771450484871524,
+      "seed_stability_pairs": [
+        0.3095985024955745,
+        0.30729355645497874,
+        0.514543086510904
+      ],
+      "recon_balance_mean": 0.0469139781146582,
+      "recon_balance_std": 0.005281914661669855,
+      "knn_mean": 0.002112268304516612,
+      "knn_std": 7.66282914955885e-05,
+      "posthoc_ari_mean": 0.1677547458620797,
+      "posthoc_ari_std": 0.0075703669331354,
+      "posthoc_nmi_mean": 0.28400742220436176,
+      "posthoc_nmi_std": 0.014675218835633734
+    },
+    "S2-EXP03-CAND-Gated-ARISE": {
+      "sil_mean": 0.21248440444469452,
+      "sil_std": 0.003964592662829298,
+      "seed_stability_mean": 0.5791435463241763,
+      "seed_stability_pairs": [
+        0.6793801051175535,
+        0.5203154537994716,
+        0.5377350800555036
+      ],
+      "recon_balance_mean": 0.023659738038684004,
+      "recon_balance_std": 0.0012233784958339416,
+      "knn_mean": 0.002244025109744948,
+      "knn_std": 0.00010665637535773733,
+      "posthoc_ari_mean": 0.24791539031073992,
+      "posthoc_ari_std": 0.01475684352586144,
+      "posthoc_nmi_mean": 0.3401835570813077,
+      "posthoc_nmi_std": 0.007037444896729
+    },
+    "S2-EXP04-ABL-fusion-concat": {
+      "sil_mean": 0.08893767495950063,
+      "sil_std": 0.007776101136347116,
+      "seed_stability_mean": 0.5912320705921442,
+      "seed_stability_pairs": [
+        0.5522526912096851,
+        0.5561757989427608,
+        0.6652677216239865
+      ],
+      "recon_balance_mean": 0.01963733814947783,
+      "recon_balance_std": 0.00026979697683082683,
+      "knn_mean": 0.0035414334193761936,
+      "knn_std": 0.00020274253823700437,
+      "posthoc_ari_mean": 0.17747122324252462,
+      "posthoc_ari_std": 0.014160163057011796,
+      "posthoc_nmi_mean": 0.29941190728697936,
+      "posthoc_nmi_std": 0.011467022287514733
+    },
+    "S2-EXP05-ABL-recon-pca30": {
+      "sil_mean": 0.19014750917752585,
+      "sil_std": 0.014409046951498633,
+      "seed_stability_mean": 0.5718621335884153,
+      "seed_stability_pairs": [
+        0.5398951187045664,
+        0.5537989610276219,
+        0.6218923210330575
+      ],
+      "recon_balance_mean": 0.0006124355239963668,
+      "recon_balance_std": 1.6594552499267217e-05,
+      "knn_mean": 0.0033948920445038056,
+      "knn_std": 0.0003124078725255144,
+      "posthoc_ari_mean": 0.24646263410876182,
+      "posthoc_ari_std": 0.005933852552752443,
+      "posthoc_nmi_mean": 0.3650747166595465,
+      "posthoc_nmi_std": 0.007785996735391932
+    },
+    "S2-EXP06-ABL-recon-decoupled": {
+      "sil_mean": 0.1235850602388382,
+      "sil_std": 0.021343229386147,
+      "seed_stability_mean": 0.5120309321976463,
+      "seed_stability_pairs": [
+        0.4165501673015872,
+        0.6055813456045506,
+        0.5139612836868008
+      ],
+      "recon_balance_mean": 0.016225985576843762,
+      "recon_balance_std": 0.0007207314227538806,
+      "knn_mean": 0.004220803905483667,
+      "knn_std": 0.0003010311019364341,
+      "posthoc_ari_mean": 0.21820623437369338,
+      "posthoc_ari_std": 0.0083983680377067,
+      "posthoc_nmi_mean": 0.32358929211810344,
+      "posthoc_nmi_std": 0.008793112698854817
+    },
+    "S2-EXP07-ABL-spa-zero": {
+      "sil_mean": 0.09768733382225037,
+      "sil_std": 0.006859083705992972,
+      "seed_stability_mean": 0.4704216718346668,
+      "seed_stability_pairs": [
+        0.5021007408800336,
+        0.5603785175501986,
+        0.3487857570737682
+      ],
+      "recon_balance_mean": 0.023320267768516006,
+      "recon_balance_std": 0.00023900049742833743,
+      "knn_mean": 0.004265443919411425,
+      "knn_std": 0.0004446532350714654,
+      "posthoc_ari_mean": 0.22507134163211553,
+      "posthoc_ari_std": 0.03474958264431353,
+      "posthoc_nmi_mean": 0.3293224972233148,
+      "posthoc_nmi_std": 0.014427824893145659
+    },
+    "S2-EXP08-ABL-spa-dense-bce": {
+      "sil_mean": 0.09900125116109848,
+      "sil_std": 0.002168580683083989,
+      "seed_stability_mean": 0.409823164943887,
+      "seed_stability_pairs": [
+        0.2680781434329947,
+        0.5802301288384654,
+        0.3811612225602008
+      ],
+      "recon_balance_mean": 0.03650007553609727,
+      "recon_balance_std": 0.009407550297706969,
+      "knn_mean": 0.004248090183688688,
+      "knn_std": 0.0007337661109293064,
+      "posthoc_ari_mean": 0.226551076882103,
+      "posthoc_ari_std": 0.02451294298812559,
+      "posthoc_nmi_mean": 0.30949196123898853,
+      "posthoc_nmi_std": 0.027867999458547912
+    },
+    "S2-EXP09-ABL-spa-laplacian": {
+      "sil_mean": 0.37963156898816425,
+      "sil_std": 0.009468082066038783,
+      "seed_stability_mean": 0.5948038853157255,
+      "seed_stability_pairs": [
+        0.6538943351332909,
+        0.5978021951472133,
+        0.5327151256666722
+      ],
+      "recon_balance_mean": 0.07758266845956426,
+      "recon_balance_std": 0.0017957460529380944,
+      "knn_mean": 0.003723752859166495,
+      "knn_std": 0.000137343400210119,
+      "posthoc_ari_mean": 0.20484904439341975,
+      "posthoc_ari_std": 0.005172739453016451,
+      "posthoc_nmi_mean": 0.33600694400173214,
+      "posthoc_nmi_std": 0.0015232039505980635
+    },
+    "S2-EXP10-ABL-backbone-gat": {
+      "sil_mean": 0.36060280601183575,
+      "sil_std": 0.010972118637422132,
+      "seed_stability_mean": 0.5309873488204581,
+      "seed_stability_pairs": [
+        0.5598359648860455,
+        0.5066219423522137,
+        0.5265041392231149
+      ],
+      "recon_balance_mean": 0.05774349301407702,
+      "recon_balance_std": 0.0005599885005235499,
+      "knn_mean": 0.0027286836255916587,
+      "knn_std": 7.670594481586589e-05,
+      "posthoc_ari_mean": 0.23248417627330953,
+      "posthoc_ari_std": 0.015656894321248338,
+      "posthoc_nmi_mean": 0.33658252293956564,
+      "posthoc_nmi_std": 0.013755287501760532
+    }
+  },
+  "10x_human_lymph_node_D1": {
+    "S2-EXP01-CAND-H-HiRe": {
+      "sil_mean": 0.08154130727052689,
+      "sil_std": 0.03690148748305012,
+      "seed_stability_mean": 0.38412226745484784,
+      "seed_stability_pairs": [
+        0.4352660492514092,
+        0.4203856992265488,
+        0.29671505388658537
+      ],
+      "recon_balance_mean": 0.03475618705512479,
+      "recon_balance_std": 0.015818139605210037,
+      "knn_mean": 0.004769685781070533,
+      "knn_std": 0.000511010100285264,
+      "posthoc_ari_mean": 0.16335981656170465,
+      "posthoc_ari_std": 0.05170298095863168,
+      "posthoc_nmi_mean": 0.21190977619179827,
+      "posthoc_nmi_std": 0.04177141829490411
+    },
+    "S2-EXP02-CAND-Attn-SAGE": {
+      "sil_mean": 0.38014426827430725,
+      "sil_std": 0.021746890429306956,
+      "seed_stability_mean": 0.3338045617330461,
+      "seed_stability_pairs": [
+        0.33902841644346315,
+        0.2443051368873803,
+        0.41808013186829496
+      ],
+      "recon_balance_mean": 0.01248531781111309,
+      "recon_balance_std": 0.007296528434068769,
+      "knn_mean": 0.002807962704688947,
+      "knn_std": 0.00025412638386010746,
+      "posthoc_ari_mean": 0.14353228668708243,
+      "posthoc_ari_std": 0.023711200511576266,
+      "posthoc_nmi_mean": 0.26990436334682016,
+      "posthoc_nmi_std": 0.02276412333426846
+    },
+    "S2-EXP03-CAND-Gated-ARISE": {
+      "sil_mean": 0.17919805149237314,
+      "sil_std": 0.006509076331337076,
+      "seed_stability_mean": 0.6443845792057653,
+      "seed_stability_pairs": [
+        0.7023346124922067,
+        0.6614285001995307,
+        0.5693906249255587
+      ],
+      "recon_balance_mean": 0.009487276255238925,
+      "recon_balance_std": 0.000162681499433297,
+      "knn_mean": 0.002631466059620991,
+      "knn_std": 0.00015611087317650432,
+      "posthoc_ari_mean": 0.2042371479911058,
+      "posthoc_ari_std": 0.025907828572077476,
+      "posthoc_nmi_mean": 0.3049575329228378,
+      "posthoc_nmi_std": 0.011848259441052961
+    },
+    "S2-EXP04-ABL-fusion-concat": {
+      "sil_mean": 0.08589073022206624,
+      "sil_std": 0.0032886657608411137,
+      "seed_stability_mean": 0.5410249418492836,
+      "seed_stability_pairs": [
+        0.7195143702127924,
+        0.46045823223898596,
+        0.44310222309607245
+      ],
+      "recon_balance_mean": 0.013775067588017534,
+      "recon_balance_std": 0.007856791304764492,
+      "knn_mean": 0.004048089531248518,
+      "knn_std": 0.0006786199473774477,
+      "posthoc_ari_mean": 0.20768286039925088,
+      "posthoc_ari_std": 0.014191979170471724,
+      "posthoc_nmi_mean": 0.2727168820071267,
+      "posthoc_nmi_std": 0.03634961680323332
+    },
+    "S2-EXP05-ABL-recon-pca30": {
+      "sil_mean": 0.08383643875519435,
+      "sil_std": 0.007727240510647277,
+      "seed_stability_mean": 0.2689314070508643,
+      "seed_stability_pairs": [
+        0.25175053477269066,
+        0.24749999718499852,
+        0.3075436891949038
+      ],
+      "recon_balance_mean": 0.0005525939871478055,
+      "recon_balance_std": 3.2296731463783484e-06,
+      "knn_mean": 0.005831915855424494,
+      "knn_std": 0.000417876600738464,
+      "posthoc_ari_mean": 0.15105583983026435,
+      "posthoc_ari_std": 0.015805983012558318,
+      "posthoc_nmi_mean": 0.2701150979437152,
+      "posthoc_nmi_std": 0.011376587439115519
+    },
+    "S2-EXP06-ABL-recon-decoupled": {
+      "sil_mean": 0.0989215945204099,
+      "sil_std": 0.04215957055699385,
+      "seed_stability_mean": 0.5268420085271052,
+      "seed_stability_pairs": [
+        0.6774141158210112,
+        0.40354942535504745,
+        0.49956248440525686
+      ],
+      "recon_balance_mean": 0.015558288300922875,
+      "recon_balance_std": 0.014467328093059213,
+      "knn_mean": 0.0030765338379468202,
+      "knn_std": 4.951134077222132e-05,
+      "posthoc_ari_mean": 0.24845286363405047,
+      "posthoc_ari_std": 0.01175520489327971,
+      "posthoc_nmi_mean": 0.2951182401966353,
+      "posthoc_nmi_std": 0.004990225378989955
+    },
+    "S2-EXP07-ABL-spa-zero": {
+      "sil_mean": 0.07223697441319625,
+      "sil_std": 0.03396238087816795,
+      "seed_stability_mean": 0.5178195806233463,
+      "seed_stability_pairs": [
+        0.420098206207327,
+        0.6867091504074507,
+        0.44665138525526116
+      ],
+      "recon_balance_mean": 0.02398147728888711,
+      "recon_balance_std": 0.00047104283999105715,
+      "knn_mean": 0.0036657027653937656,
+      "knn_std": 0.0004441845102015782,
+      "posthoc_ari_mean": 0.23151120923759094,
+      "posthoc_ari_std": 0.04933187498070731,
+      "posthoc_nmi_mean": 0.27481351926201003,
+      "posthoc_nmi_std": 0.041340850615187726
+    },
+    "S2-EXP08-ABL-spa-dense-bce": {
+      "sil_mean": 0.10167768597602844,
+      "sil_std": 0.0055382530986824935,
+      "seed_stability_mean": 0.7172592939169422,
+      "seed_stability_pairs": [
+        0.7085709654538295,
+        0.6621818262325281,
+        0.7810250900644691
+      ],
+      "recon_balance_mean": 0.023951931391521523,
+      "recon_balance_std": 0.0006099311305214926,
+      "knn_mean": 0.003919748466052271,
+      "knn_std": 0.0005648632578163414,
+      "posthoc_ari_mean": 0.25281415469567065,
+      "posthoc_ari_std": 0.008633310194459617,
+      "posthoc_nmi_mean": 0.2746388854783838,
+      "posthoc_nmi_std": 0.020318095131057427
+    },
+    "S2-EXP09-ABL-spa-laplacian": {
+      "sil_mean": 0.36720086137453717,
+      "sil_std": 0.025988698351035535,
+      "seed_stability_mean": 0.3383730752397418,
+      "seed_stability_pairs": [
+        0.3636927520207199,
+        0.29256330540412334,
+        0.35886316829438225
+      ],
+      "recon_balance_mean": 0.03346380332498482,
+      "recon_balance_std": 0.0006584823195673113,
+      "knn_mean": 0.0026848004899764966,
+      "knn_std": 0.00045125991356969236,
+      "posthoc_ari_mean": 0.1674703788660541,
+      "posthoc_ari_std": 0.029770438304903786,
+      "posthoc_nmi_mean": 0.25653811198164317,
+      "posthoc_nmi_std": 0.0323004579856088
+    },
+    "S2-EXP10-ABL-backbone-gat": {
+      "sil_mean": 0.30487048625946045,
+      "sil_std": 0.01440435782509525,
+      "seed_stability_mean": 0.29642833432491766,
+      "seed_stability_pairs": [
+        0.2784066228296901,
+        0.29262962261096015,
+        0.3182487575341027
+      ],
+      "recon_balance_mean": 0.020759070313470008,
+      "recon_balance_std": 0.0006486920514309767,
+      "knn_mean": 0.0033049109077483694,
+      "knn_std": 0.00014841866428295028,
+      "posthoc_ari_mean": 0.1607454886811822,
+      "posthoc_ari_std": 0.017783914175834074,
+      "posthoc_nmi_mean": 0.24504636089992263,
+      "posthoc_nmi_std": 0.009845865393308463
+    }
+  },
+  "Mouse_Brain_E11_S1": {
+    "S2-EXP01-CAND-H-HiRe": {
+      "sil_mean": 0.060658924592038,
+      "sil_std": 0.03616627480148111,
+      "seed_stability_mean": 0.3980823348306983,
+      "seed_stability_pairs": [
+        0.47594960139695164,
+        0.35789598799503247,
+        0.36040141510011087
+      ],
+      "recon_balance_mean": 0.0005569206200220488,
+      "recon_balance_std": 0.0001462572120761146,
+      "knn_mean": 0.04287881784899309,
+      "knn_std": 0.005252502183013568,
+      "posthoc_ari_mean": 0.12656983315119943,
+      "posthoc_ari_std": 0.06077956334132704,
+      "posthoc_nmi_mean": 0.20020198615588122,
+      "posthoc_nmi_std": 0.04533154834588665
+    },
+    "S2-EXP02-CAND-Attn-SAGE": {
+      "sil_mean": 0.43592920899391174,
+      "sil_std": 0.016844334181203905,
+      "seed_stability_mean": 0.461591903306443,
+      "seed_stability_pairs": [
+        0.4773164625565975,
+        0.4474285276808869,
+        0.46003071968184445
+      ],
+      "recon_balance_mean": 0.011281067214827417,
+      "recon_balance_std": 0.00028967394915384716,
+      "knn_mean": 0.012231352868041648,
+      "knn_std": 0.0005180505809882201,
+      "posthoc_ari_mean": 0.09939582981814321,
+      "posthoc_ari_std": 0.005497927168385412,
+      "posthoc_nmi_mean": 0.1573798755057695,
+      "posthoc_nmi_std": 0.0050901672204978895
+    },
+    "S2-EXP03-CAND-Gated-ARISE": {
+      "sil_mean": 0.07486806313196818,
+      "sil_std": 0.04718659124395387,
+      "seed_stability_mean": 0.3712921041005519,
+      "seed_stability_pairs": [
+        0.30959261540299976,
+        0.494712643581283,
+        0.30957105331737306
+      ],
+      "recon_balance_mean": 0.0005779861119614606,
+      "recon_balance_std": 0.000327829970208871,
+      "knn_mean": 0.04416344366375289,
+      "knn_std": 0.010962340380811604,
+      "posthoc_ari_mean": 0.17870418067128788,
+      "posthoc_ari_std": 0.06260762756282162,
+      "posthoc_nmi_mean": 0.241614576011039,
+      "posthoc_nmi_std": 0.03828108818199689
+    },
+    "S2-EXP04-ABL-fusion-concat": {
+      "sil_mean": 0.01758855829636256,
+      "sil_std": 0.03475143410185946,
+      "seed_stability_mean": 0.40929786842930277,
+      "seed_stability_pairs": [
+        0.5601379275096774,
+        0.34478536328014286,
+        0.32297031449808805
+      ],
+      "recon_balance_mean": 0.0005243663760677958,
+      "recon_balance_std": 0.0001011897852518229,
+      "knn_mean": 0.054517326543902324,
+      "knn_std": 0.004503594452292692,
+      "posthoc_ari_mean": 0.14232916788570793,
+      "posthoc_ari_std": 0.05473377960869708,
+      "posthoc_nmi_mean": 0.20790360755410406,
+      "posthoc_nmi_std": 0.038804694832165476
+    },
+    "S2-EXP05-ABL-recon-pca30": {
+      "sil_mean": 0.1394811769326528,
+      "sil_std": 0.02386749562818671,
+      "seed_stability_mean": 0.5639166671722541,
+      "seed_stability_pairs": [
+        0.5219555906038446,
+        0.5236348484527493,
+        0.646159562460168
+      ],
+      "recon_balance_mean": 1.0,
+      "recon_balance_std": 0.0,
+      "knn_mean": 0.018256893665567,
+      "knn_std": 0.002477048315559063,
+      "posthoc_ari_mean": 0.26834676216586756,
+      "posthoc_ari_std": 0.019036576174945186,
+      "posthoc_nmi_mean": 0.3412496427240735,
+      "posthoc_nmi_std": 0.001824146369241284
+    },
+    "S2-EXP06-ABL-recon-decoupled": {
+      "sil_mean": 0.066980450724562,
+      "sil_std": 0.06793221462330332,
+      "seed_stability_mean": 0.4061953249810881,
+      "seed_stability_pairs": [
+        0.5124984498673683,
+        0.3479257184117518,
+        0.35816180666414427
+      ],
+      "recon_balance_mean": 0.0005472175363425454,
+      "recon_balance_std": 0.00016345766917493453,
+      "knn_mean": 0.0432463668519631,
+      "knn_std": 0.005576322268646952,
+      "posthoc_ari_mean": 0.1489175636675837,
+      "posthoc_ari_std": 0.07210988233967819,
+      "posthoc_nmi_mean": 0.21696757894969068,
+      "posthoc_nmi_std": 0.05630588023862216
+    },
+    "S2-EXP07-ABL-spa-zero": {
+      "sil_mean": 0.10021544620394707,
+      "sil_std": 0.032045463659159605,
+      "seed_stability_mean": 0.5358312616631395,
+      "seed_stability_pairs": [
+        0.5343847371706884,
+        0.5837395475957883,
+        0.48936950022294207
+      ],
+      "recon_balance_mean": 0.00047828538653640705,
+      "recon_balance_std": 4.994489709861621e-05,
+      "knn_mean": 0.04203904094338925,
+      "knn_std": 0.0019908851317489416,
+      "posthoc_ari_mean": 0.08406898296492711,
+      "posthoc_ari_std": 0.0032249613000510688,
+      "posthoc_nmi_mean": 0.17526809093964313,
+      "posthoc_nmi_std": 0.003014721016344246
+    },
+    "S2-EXP08-ABL-spa-dense-bce": {
+      "sil_mean": 0.07070274154345195,
+      "sil_std": 0.01256818597397986,
+      "seed_stability_mean": 0.516354934785343,
+      "seed_stability_pairs": [
+        0.5203569054747069,
+        0.5104296864344883,
+        0.5182782124468336
+      ],
+      "recon_balance_mean": 0.00044185996238539177,
+      "recon_balance_std": 7.809326811939627e-05,
+      "knn_mean": 0.044676992892671276,
+      "knn_std": 0.004415964784230193,
+      "posthoc_ari_mean": 0.09490081792085614,
+      "posthoc_ari_std": 0.008418056201450383,
+      "posthoc_nmi_mean": 0.17980216562254037,
+      "posthoc_nmi_std": 0.007663990370895024
+    },
+    "S2-EXP09-ABL-spa-laplacian": {
+      "sil_mean": 0.39974183837572735,
+      "sil_std": 0.015218978228940408,
+      "seed_stability_mean": 0.3680982594423814,
+      "seed_stability_pairs": [
+        0.3862155669231557,
+        0.3030399455571162,
+        0.4150392658468723
+      ],
+      "recon_balance_mean": 0.004585029195852747,
+      "recon_balance_std": 0.00026348529049091105,
+      "knn_mean": 0.011047278597173485,
+      "knn_std": 0.0005277117679052359,
+      "posthoc_ari_mean": 0.11631067422817727,
+      "posthoc_ari_std": 0.02141022895117677,
+      "posthoc_nmi_mean": 0.2514693432469342,
+      "posthoc_nmi_std": 0.007246897623357888
+    },
+    "S2-EXP10-ABL-backbone-gat": {
+      "sil_mean": 0.2765250305334727,
+      "sil_std": 0.01475419055039515,
+      "seed_stability_mean": 0.6908867276757933,
+      "seed_stability_pairs": [
+        0.6729221926619596,
+        0.6845812462625509,
+        0.7151567441028697
+      ],
+      "recon_balance_mean": 0.000445551178023343,
+      "recon_balance_std": 3.219342559395917e-05,
+      "knn_mean": 0.0261022379334957,
+      "knn_std": 0.0018289541220864853,
+      "posthoc_ari_mean": 0.09220944172880964,
+      "posthoc_ari_std": 0.005165090131826271,
+      "posthoc_nmi_mean": 0.194181877727127,
+      "posthoc_nmi_std": 0.004018038748148886
+    }
+  },
+  "Mouse_Brain_E13_S1": {
+    "S2-EXP01-CAND-H-HiRe": {
+      "sil_mean": 0.06130815918246905,
+      "sil_std": 0.03389405821564401,
+      "seed_stability_mean": 0.3881380162698776,
+      "seed_stability_pairs": [
+        0.3958188688904646,
+        0.39757258572298637,
+        0.37102259419618183
+      ],
+      "recon_balance_mean": 0.0008583807400732511,
+      "recon_balance_std": 1.048719672250373e-05,
+      "knn_mean": 0.02266125616422893,
+      "knn_std": 0.0030919969894971887,
+      "posthoc_ari_mean": 0.09860785443610853,
+      "posthoc_ari_std": 0.023407322916071796,
+      "posthoc_nmi_mean": 0.10524505148837233,
+      "posthoc_nmi_std": 0.016278934512712905
+    },
+    "S2-EXP02-CAND-Attn-SAGE": {
+      "sil_mean": 0.3831152816613515,
+      "sil_std": 0.027947319601841446,
+      "seed_stability_mean": 0.3530730455407441,
+      "seed_stability_pairs": [
+        0.38037093375014736,
+        0.32269835803947977,
+        0.35614984483260526
+      ],
+      "recon_balance_mean": 0.011112265203718762,
+      "recon_balance_std": 0.0004222660632873867,
+      "knn_mean": 0.0063775445068478915,
+      "knn_std": 0.0008558911978471719,
+      "posthoc_ari_mean": 0.05123369757790249,
+      "posthoc_ari_std": 0.006995234637162954,
+      "posthoc_nmi_mean": 0.09279694641166734,
+      "posthoc_nmi_std": 0.005912596314881304
+    },
+    "S2-EXP03-CAND-Gated-ARISE": {
+      "sil_mean": 0.1712402105331421,
+      "sil_std": 0.040137406449229016,
+      "seed_stability_mean": 0.4026066566651305,
+      "seed_stability_pairs": [
+        0.3441681526709927,
+        0.5780216269235758,
+        0.2856301904008229
+      ],
+      "recon_balance_mean": 0.001687329964275038,
+      "recon_balance_std": 0.0017049541930998086,
+      "knn_mean": 0.01967598611218276,
+      "knn_std": 0.008633689590588342,
+      "posthoc_ari_mean": 0.07519916151319038,
+      "posthoc_ari_std": 0.01194862550853305,
+      "posthoc_nmi_mean": 0.10286355927575387,
+      "posthoc_nmi_std": 0.008664805476101477
+    },
+    "S2-EXP04-ABL-fusion-concat": {
+      "sil_mean": 0.009223266407692185,
+      "sil_std": 0.006742125844035119,
+      "seed_stability_mean": 0.391851446497151,
+      "seed_stability_pairs": [
+        0.4832465684652511,
+        0.33607508546777126,
+        0.3562326855584305
+      ],
+      "recon_balance_mean": 0.0007658911263312744,
+      "recon_balance_std": 0.0003499733840477222,
+      "knn_mean": 0.028488639499988075,
+      "knn_std": 0.006767553772753771,
+      "posthoc_ari_mean": 0.09688610539705933,
+      "posthoc_ari_std": 0.025182131062724072,
+      "posthoc_nmi_mean": 0.12347577717455482,
+      "posthoc_nmi_std": 0.013219758007555458
+    },
+    "S2-EXP05-ABL-recon-pca30": {
+      "sil_mean": 0.11525638401508331,
+      "sil_std": 0.009370323110952237,
+      "seed_stability_mean": 0.44436325071725635,
+      "seed_stability_pairs": [
+        0.3599545001378116,
+        0.5924403037382522,
+        0.3806949482757053
+      ],
+      "recon_balance_mean": 1.0,
+      "recon_balance_std": 0.0,
+      "knn_mean": 0.010776877400881102,
+      "knn_std": 0.0003835223539940208,
+      "posthoc_ari_mean": 0.11237751165532821,
+      "posthoc_ari_std": 0.020679766383613025,
+      "posthoc_nmi_mean": 0.2133803551276644,
+      "posthoc_nmi_std": 0.012447652014026667
+    },
+    "S2-EXP06-ABL-recon-decoupled": {
+      "sil_mean": 0.05889436478416125,
+      "sil_std": 0.020693751594989734,
+      "seed_stability_mean": 0.5060564597270302,
+      "seed_stability_pairs": [
+        0.4817046101516885,
+        0.5369432062170009,
+        0.4995215628124011
+      ],
+      "recon_balance_mean": 0.0008248367131267704,
+      "recon_balance_std": 0.00010919625885049426,
+      "knn_mean": 0.020587217343453746,
+      "knn_std": 0.0017467152152321403,
+      "posthoc_ari_mean": 0.0787757506585784,
+      "posthoc_ari_std": 0.007163505465193073,
+      "posthoc_nmi_mean": 0.10291153507903582,
+      "posthoc_nmi_std": 0.01365417847843572
+    },
+    "S2-EXP07-ABL-spa-zero": {
+      "sil_mean": 0.0479177621503671,
+      "sil_std": 0.02084898453253341,
+      "seed_stability_mean": 0.4517858281647365,
+      "seed_stability_pairs": [
+        0.40167966737276223,
+        0.5257104795431826,
+        0.4279673375782646
+      ],
+      "recon_balance_mean": 0.0005439344605682523,
+      "recon_balance_std": 7.529157790292378e-05,
+      "knn_mean": 0.02788214085973079,
+      "knn_std": 0.002193794764120555,
+      "posthoc_ari_mean": 0.0968732456999465,
+      "posthoc_ari_std": 0.006954675321770259,
+      "posthoc_nmi_mean": 0.1069123451886385,
+      "posthoc_nmi_std": 0.010985672833198668
+    },
+    "S2-EXP08-ABL-spa-dense-bce": {
+      "sil_mean": 0.045037322832892336,
+      "sil_std": 0.04378751342263413,
+      "seed_stability_mean": 0.3784339631110633,
+      "seed_stability_pairs": [
+        0.3778347528880702,
+        0.4060009485111702,
+        0.3514661879339494
+      ],
+      "recon_balance_mean": 0.00046361979773875957,
+      "recon_balance_std": 1.3415070878585996e-06,
+      "knn_mean": 0.02835975137189471,
+      "knn_std": 0.0013567917107644512,
+      "posthoc_ari_mean": 0.10159562705672338,
+      "posthoc_ari_std": 0.027325791298273037,
+      "posthoc_nmi_mean": 0.11746255197827966,
+      "posthoc_nmi_std": 0.021689394864064307
+    },
+    "S2-EXP09-ABL-spa-laplacian": {
+      "sil_mean": 0.42656861742337543,
+      "sil_std": 0.033219757598101536,
+      "seed_stability_mean": 0.5630968284796861,
+      "seed_stability_pairs": [
+        0.5357803517670994,
+        0.5719920281212986,
+        0.5815181055506604
+      ],
+      "recon_balance_mean": 0.009220931361085491,
+      "recon_balance_std": 0.002103576467761815,
+      "knn_mean": 0.005997098557079118,
+      "knn_std": 0.00033990622654473497,
+      "posthoc_ari_mean": 0.0901244474861076,
+      "posthoc_ari_std": 0.0067618980263424566,
+      "posthoc_nmi_mean": 0.26628071535533365,
+      "posthoc_nmi_std": 0.01893155502162119
+    },
+    "S2-EXP10-ABL-backbone-gat": {
+      "sil_mean": 0.1847028781970342,
+      "sil_std": 0.005361556087182886,
+      "seed_stability_mean": 0.22919088964651957,
+      "seed_stability_pairs": [
+        0.3557872852724752,
+        0.14976459460931602,
+        0.18202078905776745
+      ],
+      "recon_balance_mean": 0.004991055406060464,
+      "recon_balance_std": 0.003187909725149081,
+      "knn_mean": 0.010436607181622407,
+      "knn_std": 0.0032834311444569293,
+      "posthoc_ari_mean": 0.07187044502710732,
+      "posthoc_ari_std": 0.011925011839381876,
+      "posthoc_nmi_mean": 0.10746839644746363,
+      "posthoc_nmi_std": 0.013384602158124743
+    }
+  },
+  "Mouse_Brain_E15_S1": {
+    "S2-EXP01-CAND-H-HiRe": {
+      "sil_mean": 0.2476301888624827,
+      "sil_std": 0.010774372003604338,
+      "seed_stability_mean": 0.6536627476937233,
+      "seed_stability_pairs": [
+        0.6497032348017244,
+        0.6673744498567968,
+        0.6439105584226488
+      ],
+      "recon_balance_mean": 0.0005958112712360922,
+      "recon_balance_std": 0.00010782587620126755,
+      "knn_mean": 0.020795121903081734,
+      "knn_std": 0.003009931297268514,
+      "posthoc_ari_mean": 0.1579032966236924,
+      "posthoc_ari_std": 0.019263358757296702,
+      "posthoc_nmi_mean": 0.22838374645755763,
+      "posthoc_nmi_std": 0.01884775671014098
+    },
+    "S2-EXP02-CAND-Attn-SAGE": {
+      "sil_mean": 0.38010650873184204,
+      "sil_std": 0.006289338479040059,
+      "seed_stability_mean": 0.2672649173048652,
+      "seed_stability_pairs": [
+        0.2391990297867135,
+        0.2940815769250199,
+        0.26851414520286226
+      ],
+      "recon_balance_mean": 0.012790707678063092,
+      "recon_balance_std": 0.0003379642798860426,
+      "knn_mean": 0.004993647499972583,
+      "knn_std": 0.00023786274874182633,
+      "posthoc_ari_mean": 0.1750589608023941,
+      "posthoc_ari_std": 0.015326650212934133,
+      "posthoc_nmi_mean": 0.30262539974651287,
+      "posthoc_nmi_std": 0.017891500698283866
+    },
+    "S2-EXP03-CAND-Gated-ARISE": {
+      "sil_mean": 0.2503547469774882,
+      "sil_std": 0.024988839482015003,
+      "seed_stability_mean": 0.7220306702398812,
+      "seed_stability_pairs": [
+        0.6603505240344976,
+        0.7060711183855298,
+        0.7996703682996162
+      ],
+      "recon_balance_mean": 0.0004305545023279798,
+      "recon_balance_std": 4.5985006181033584e-05,
+      "knn_mean": 0.024922739774193094,
+      "knn_std": 0.0023482397237412594,
+      "posthoc_ari_mean": 0.2213529507235296,
+      "posthoc_ari_std": 0.003542956150669713,
+      "posthoc_nmi_mean": 0.3106928650889411,
+      "posthoc_nmi_std": 0.0015048504130804785
+    },
+    "S2-EXP04-ABL-fusion-concat": {
+      "sil_mean": 0.24220366279284158,
+      "sil_std": 0.026185951527058503,
+      "seed_stability_mean": 0.6119558663125347,
+      "seed_stability_pairs": [
+        0.6453070823685308,
+        0.6106223322558557,
+        0.5799381843132178
+      ],
+      "recon_balance_mean": 0.0005326520611071417,
+      "recon_balance_std": 0.00010484800984028977,
+      "knn_mean": 0.03237212848335079,
+      "knn_std": 0.0025453683779102475,
+      "posthoc_ari_mean": 0.1447799571472484,
+      "posthoc_ari_std": 0.013437181756679602,
+      "posthoc_nmi_mean": 0.2254582616418818,
+      "posthoc_nmi_std": 0.011130704682794165
+    },
+    "S2-EXP05-ABL-recon-pca30": {
+      "sil_mean": 0.22076583405335745,
+      "sil_std": 0.02943480350848978,
+      "seed_stability_mean": 0.823836400129383,
+      "seed_stability_pairs": [
+        0.805487350581174,
+        0.8548224564928893,
+        0.8111993933140856
+      ],
+      "recon_balance_mean": 0.6667690823589707,
+      "recon_balance_std": 0.47125968312997535,
+      "knn_mean": 0.009014944847105728,
+      "knn_std": 0.0009947376285352131,
+      "posthoc_ari_mean": 0.2345434465701085,
+      "posthoc_ari_std": 0.009961236333799908,
+      "posthoc_nmi_mean": 0.33560718521378674,
+      "posthoc_nmi_std": 0.00750527737444785
+    },
+    "S2-EXP06-ABL-recon-decoupled": {
+      "sil_mean": 0.151564488808314,
+      "sil_std": 0.01699081202504373,
+      "seed_stability_mean": 0.6636373907962108,
+      "seed_stability_pairs": [
+        0.7282812292711077,
+        0.6406036621302876,
+        0.6220272809872369
+      ],
+      "recon_balance_mean": 0.0005697579360741086,
+      "recon_balance_std": 0.00013739111508915796,
+      "knn_mean": 0.023373297749810854,
+      "knn_std": 0.0007066840693795744,
+      "posthoc_ari_mean": 0.23121817288363347,
+      "posthoc_ari_std": 0.0135292875707033,
+      "posthoc_nmi_mean": 0.29681674465675,
+      "posthoc_nmi_std": 0.02431754511437129
+    },
+    "S2-EXP07-ABL-spa-zero": {
+      "sil_mean": 0.21506955722967783,
+      "sil_std": 0.03449277452568207,
+      "seed_stability_mean": 0.633638479897165,
+      "seed_stability_pairs": [
+        0.6318354067180771,
+        0.6409671970200854,
+        0.6281128359533326
+      ],
+      "recon_balance_mean": 0.0005205657350724637,
+      "recon_balance_std": 6.479810204181614e-05,
+      "knn_mean": 0.021778378229831013,
+      "knn_std": 0.0015292288335159738,
+      "posthoc_ari_mean": 0.18177136082953213,
+      "posthoc_ari_std": 0.025268595875092854,
+      "posthoc_nmi_mean": 0.2445000682135968,
+      "posthoc_nmi_std": 0.021313634363787005
+    },
+    "S2-EXP08-ABL-spa-dense-bce": {
+      "sil_mean": 0.19585032761096954,
+      "sil_std": 0.036454454038223526,
+      "seed_stability_mean": 0.638782994692089,
+      "seed_stability_pairs": [
+        0.613963662907706,
+        0.5820560502396553,
+        0.7203292709289056
+      ],
+      "recon_balance_mean": 0.00044680095221017656,
+      "recon_balance_std": 2.518950327371109e-05,
+      "knn_mean": 0.023096500370531122,
+      "knn_std": 0.0025401787457168833,
+      "posthoc_ari_mean": 0.2061718408475571,
+      "posthoc_ari_std": 0.032583534532895794,
+      "posthoc_nmi_mean": 0.2740278881237975,
+      "posthoc_nmi_std": 0.027393380000179154
+    },
+    "S2-EXP09-ABL-spa-laplacian": {
+      "sil_mean": 0.44683554768562317,
+      "sil_std": 0.01805486186370205,
+      "seed_stability_mean": 0.533033453646851,
+      "seed_stability_pairs": [
+        0.5804201287286056,
+        0.49933900200426107,
+        0.5193412302076861
+      ],
+      "recon_balance_mean": 0.006823405499641745,
+      "recon_balance_std": 0.00045687385616428926,
+      "knn_mean": 0.004991970417210593,
+      "knn_std": 0.00019088632973528614,
+      "posthoc_ari_mean": 0.26757862259473403,
+      "posthoc_ari_std": 0.034192475913928655,
+      "posthoc_nmi_mean": 0.3983563080595105,
+      "posthoc_nmi_std": 0.004040839554537796
+    },
+    "S2-EXP10-ABL-backbone-gat": {
+      "sil_mean": 0.396103431781133,
+      "sil_std": 0.016728748430024934,
+      "seed_stability_mean": 0.799513217202447,
+      "seed_stability_pairs": [
+        0.7943352101246166,
+        0.7716343228305204,
+        0.832570118652204
+      ],
+      "recon_balance_mean": 0.0004887938398822077,
+      "recon_balance_std": 3.343378211670847e-05,
+      "knn_mean": 0.008449238313782697,
+      "knn_std": 0.00029095332873114326,
+      "posthoc_ari_mean": 0.19888463943700094,
+      "posthoc_ari_std": 0.009152851462313887,
+      "posthoc_nmi_mean": 0.3147419351709884,
+      "posthoc_nmi_std": 0.005980467275406419
+    }
+  },
+  "Mouse_Brain_E18_S1": {
+    "S2-EXP01-CAND-H-HiRe": {
+      "sil_mean": 0.0515828567246596,
+      "sil_std": 0.05299997100609944,
+      "seed_stability_mean": 0.35100153384352417,
+      "seed_stability_pairs": [
+        0.26649744440573403,
+        0.5237321006705101,
+        0.2627750564543282
+      ],
+      "recon_balance_mean": 0.0007763752603430074,
+      "recon_balance_std": 0.00016833399754518494,
+      "knn_mean": 0.020309367772155872,
+      "knn_std": 0.003624675746962748,
+      "posthoc_ari_mean": 0.09609669534684133,
+      "posthoc_ari_std": 0.009616458839823764,
+      "posthoc_nmi_mean": 0.15919554310986353,
+      "posthoc_nmi_std": 0.008240874359951546
+    },
+    "S2-EXP02-CAND-Attn-SAGE": {
+      "sil_mean": 0.31115251779556274,
+      "sil_std": 0.014521477255662144,
+      "seed_stability_mean": 0.2497643205611163,
+      "seed_stability_pairs": [
+        0.24979732231138715,
+        0.2475711221074942,
+        0.2519245172644675
+      ],
+      "recon_balance_mean": 0.016371994534954633,
+      "recon_balance_std": 0.0010962247257725554,
+      "knn_mean": 0.0067462507672416796,
+      "knn_std": 0.0007819184900374601,
+      "posthoc_ari_mean": 0.02372145685994992,
+      "posthoc_ari_std": 0.0005660378413701568,
+      "posthoc_nmi_mean": 0.09278904408948303,
+      "posthoc_nmi_std": 0.0019097726012081552
+    },
+    "S2-EXP03-CAND-Gated-ARISE": {
+      "sil_mean": 0.12678488592306772,
+      "sil_std": 0.03834768751698736,
+      "seed_stability_mean": 0.4662280061373507,
+      "seed_stability_pairs": [
+        0.4486932419681595,
+        0.4728023089868628,
+        0.47718846745702986
+      ],
+      "recon_balance_mean": 0.00047684145284912987,
+      "recon_balance_std": 2.239287198249119e-05,
+      "knn_mean": 0.02730133657686556,
+      "knn_std": 0.00016866918573805336,
+      "posthoc_ari_mean": 0.10926861330386661,
+      "posthoc_ari_std": 0.02941586779967498,
+      "posthoc_nmi_mean": 0.16848787819248745,
+      "posthoc_nmi_std": 0.03032240320320755
+    },
+    "S2-EXP04-ABL-fusion-concat": {
+      "sil_mean": 0.014888414181768894,
+      "sil_std": 0.03492712484437037,
+      "seed_stability_mean": 0.22839893739044767,
+      "seed_stability_pairs": [
+        0.15344080132245702,
+        0.1503753326992088,
+        0.3813806781496771
+      ],
+      "recon_balance_mean": 0.0006447480051096707,
+      "recon_balance_std": 0.00016589543847827105,
+      "knn_mean": 0.027888097988087918,
+      "knn_std": 0.002821493555582483,
+      "posthoc_ari_mean": 0.09562985580864652,
+      "posthoc_ari_std": 0.00459300388190867,
+      "posthoc_nmi_mean": 0.1456539554848968,
+      "posthoc_nmi_std": 0.006735143098708458
+    },
+    "S2-EXP05-ABL-recon-pca30": {
+      "sil_mean": 0.06690142738322417,
+      "sil_std": 0.03500189902796765,
+      "seed_stability_mean": 0.19091546657936218,
+      "seed_stability_pairs": [
+        0.20742586292353632,
+        0.10317764588393577,
+        0.2621428909306144
+      ],
+      "recon_balance_mean": 0.6667107325329013,
+      "recon_balance_std": 0.4713422022453648,
+      "knn_mean": 0.009953115485905691,
+      "knn_std": 0.001546944175693354,
+      "posthoc_ari_mean": 0.10961598614786928,
+      "posthoc_ari_std": 0.023201120146309387,
+      "posthoc_nmi_mean": 0.19611574344225088,
+      "posthoc_nmi_std": 0.01236028587867219
+    },
+    "S2-EXP06-ABL-recon-decoupled": {
+      "sil_mean": 0.044101716950535774,
+      "sil_std": 0.027922615407605465,
+      "seed_stability_mean": 0.37444755045921796,
+      "seed_stability_pairs": [
+        0.3812265487280627,
+        0.367119232347308,
+        0.37499687030228324
+      ],
+      "recon_balance_mean": 0.0006019680223394828,
+      "recon_balance_std": 4.049968766962473e-05,
+      "knn_mean": 0.02025554129099585,
+      "knn_std": 0.003441842860204918,
+      "posthoc_ari_mean": 0.09265826758667363,
+      "posthoc_ari_std": 0.0073209234840951815,
+      "posthoc_nmi_mean": 0.1565369003220442,
+      "posthoc_nmi_std": 0.0040100450150974
+    },
+    "S2-EXP07-ABL-spa-zero": {
+      "sil_mean": 0.1105094738304615,
+      "sil_std": 0.05790856629951805,
+      "seed_stability_mean": 0.4225524477377536,
+      "seed_stability_pairs": [
+        0.42249092628096463,
+        0.40850063803737646,
+        0.4366657788949196
+      ],
+      "recon_balance_mean": 0.0006438107413935775,
+      "recon_balance_std": 6.108085156656239e-05,
+      "knn_mean": 0.021454454695525565,
+      "knn_std": 0.0009892125739232591,
+      "posthoc_ari_mean": 0.1077264548934127,
+      "posthoc_ari_std": 0.013427276172480398,
+      "posthoc_nmi_mean": 0.16359431457389312,
+      "posthoc_nmi_std": 0.005084995883833913
+    },
+    "S2-EXP08-ABL-spa-dense-bce": {
+      "sil_mean": 0.05368626490235329,
+      "sil_std": 0.029839001079873362,
+      "seed_stability_mean": 0.17352387413595718,
+      "seed_stability_pairs": [
+        0.050482868603659796,
+        0.41326484495989896,
+        0.056823908844312834
+      ],
+      "recon_balance_mean": 0.0024607174651752324,
+      "recon_balance_std": 0.002678244663105156,
+      "knn_mean": 0.01704710172907967,
+      "knn_std": 0.007028836140698709,
+      "posthoc_ari_mean": 0.07798121069901844,
+      "posthoc_ari_std": 0.032337203235355154,
+      "posthoc_nmi_mean": 0.13691122206914794,
+      "posthoc_nmi_std": 0.026565373252028873
+    },
+    "S2-EXP09-ABL-spa-laplacian": {
+      "sil_mean": 0.4002283612887065,
+      "sil_std": 0.012389984010639761,
+      "seed_stability_mean": 0.3519437859838583,
+      "seed_stability_pairs": [
+        0.271594234819476,
+        0.37369498647414273,
+        0.41054213665795597
+      ],
+      "recon_balance_mean": 0.010733766212627928,
+      "recon_balance_std": 0.0012343368088614348,
+      "knn_mean": 0.00530315182167274,
+      "knn_std": 0.0002734288562212356,
+      "posthoc_ari_mean": 0.1932743775709744,
+      "posthoc_ari_std": 0.05471281012672339,
+      "posthoc_nmi_mean": 0.3080031759120414,
+      "posthoc_nmi_std": 0.03080935733946679
+    },
+    "S2-EXP10-ABL-backbone-gat": {
+      "sil_mean": 0.18471681574980417,
+      "sil_std": 0.0020189843032290735,
+      "seed_stability_mean": 0.567964108663722,
+      "seed_stability_pairs": [
+        0.596903591344546,
+        0.5284292602138997,
+        0.5785594744327204
+      ],
+      "recon_balance_mean": 0.0005884870121740025,
+      "recon_balance_std": 4.0398632904172825e-05,
+      "knn_mean": 0.014141919313417642,
+      "knn_std": 0.00032458069757551914,
+      "posthoc_ari_mean": 0.06672153297912968,
+      "posthoc_ari_std": 0.004293062883055355,
+      "posthoc_nmi_mean": 0.13024503430430742,
+      "posthoc_nmi_std": 0.0044394061815282125
+    }
+  }
+}
