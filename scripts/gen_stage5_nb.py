@@ -85,7 +85,7 @@ REPO_URL = "https://github.com/rifatahsanpul0k/my_research.git"
 def sh(*args):
     subprocess.run(list(args), check=True, cwd=REPO)
 os.makedirs(REPO, exist_ok=True)
-OUT = os.path.join(REPO, "runs", "s3-notebook")
+OUT = os.path.join(REPO, "runs", "s5-notebook")
 os.makedirs(OUT, exist_ok=True)
 try:
     from kaggle_secrets import UserSecretsClient
@@ -116,9 +116,15 @@ def git_push(paths, msg):
     if not GIT_OK:
         return
     try:
-        sh(*_GIT, "pull", "--rebase", "origin", "main")
+        # CORRECT ORDER: commit local changes FIRST, then pull --rebase, then push.
+        # (Pulling before committing fails with "unstaged changes" once the registry
+        # is a tracked file — which broke every push after the first combo.)
         sh("git", "add", *paths)
-        sh("git", "commit", "-m", msg)
+        r = subprocess.run(["git", "status", "--porcelain"], capture_output=True,
+                           text=True, cwd=REPO)
+        if r.stdout.strip():
+            sh("git", "commit", "-m", msg)
+        sh(*_GIT, "pull", "--rebase", "origin", "main")
         sh(*_GIT, "push", "origin", "main")
         print("pushed:", msg)
     except Exception as e:
@@ -447,6 +453,55 @@ class S5SPModel(nn.Module):
             L = L + lam_spa * laplacian_loss(z, g["edge_index"])
         return L
 
+class SAGELayer(nn.Module):
+    # single GraphSAGE-mean convolution (Hamilton et al. 2017), pure torch
+    def __init__(self, d_in, d_out):
+        super().__init__()
+        self.lin = nn.Linear(2 * d_in, d_out)
+    def forward(self, x, g):
+        agg = torch.sparse.mm(g["adj_nl"], x)
+        return self.lin(torch.cat([x, agg], 1)).relu()
+
+class S5SPSageModel(nn.Module):
+    # Shared-private disentanglement WITH graph convolutions (clean test: the Stage-5
+    # SP model used plain MLPs, confounding disentanglement with encoder change).
+    # Shared 16-D (SAGE on concatenated modalities) + private 8+8-D (SAGE per modality).
+    def __init__(self, d_rna, d_aux, cfg, d_recon_rna):
+        super().__init__()
+        self.cfg = cfg
+        self.sage_s = SAGELayer(d_rna + d_aux, 32); self.lin_s = nn.Linear(32, 16)
+        self.sage_pr = SAGELayer(d_rna, 16);        self.lin_pr = nn.Linear(16, 8)
+        self.sage_pa = SAGELayer(d_aux, 16);        self.lin_pa = nn.Linear(16, 8)
+        self.dec_r = nn.Linear(32, d_recon_rna)
+        self.dec_a = nn.Linear(32, d_aux)
+        self.logvar_r = nn.Parameter(torch.zeros(()))
+        self.logvar_a = nn.Parameter(torch.zeros(()))
+
+    def forward(self, xr, xa, g):
+        zs = self.lin_s(self.sage_s(torch.cat([xr, xa], dim=1), g))
+        zpr = self.lin_pr(self.sage_pr(xr, g))
+        zpa = self.lin_pa(self.sage_pa(xa, g))
+        z = torch.cat([zs, zpr, zpa], dim=1)
+        return z, zs, zpr, zpa
+
+    def loss(self, out, tr, ta, g, lam_spa):
+        z, zs, zpr, zpa = out
+        lr = F.mse_loss(self.dec_r(z), tr); la = F.mse_loss(self.dec_a(z), ta)
+        if self.cfg.get("adapt_modality"):
+            L = 0.5 * torch.exp(-self.logvar_r) * lr + 0.5 * self.logvar_r \
+              + 0.5 * torch.exp(-self.logvar_a) * la + 0.5 * self.logvar_a
+        else:
+            L = lr + la
+        if self.cfg.get("disentangle", True):
+            def cos2(a, b):
+                c = (a * b).sum(1) / (a.norm(dim=1) * b.norm(dim=1) + 1e-8)
+                return (c ** 2).mean()
+            zpriv = torch.cat([zpr, zpa], dim=1)
+            L = L + LAM_DIS * cos2(zs, zpriv)
+        if self.cfg.get("spatial") == "laplacian":
+            L = L + lam_spa * laplacian_loss(z, g["edge_index"])
+        return L
+
 def recon_target(cfg, data):
     # recon_target: "pca64" (base, reconstruct preprocessed inputs),
     #             "pca30" (compressed), "hvg3000" (raw-ish, Stage-2 H-HiRe style)
@@ -468,6 +523,8 @@ COMBINATIONS = [
     ("S5N-adapt-modality",  dict(adapt_modality=True)),
     ("S5N-shared-private",  dict(model="shared_private")),
     ("S5N-generalized",     dict(adapt_spatial=True, adapt_modality=True, model="shared_private")),
+    ("S5N-SP-sage",         dict(model="shared_private_sage")),
+    ("S5N-SP-sage-nodis",   dict(model="shared_private_sage", disentangle=False)),
 ]
 print(f"{len(COMBINATIONS)} combinations registered")
 '''))
@@ -495,7 +552,8 @@ def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
     tr = torch.tensor(tr_np, device=DEVICE)
     ta = xa
     lam_spa = resolve_lam_spa(cfg, data)   # fixed or Moran's-I adaptive
-    ModelCls = S5SPModel if cfg.get("model") == "shared_private" else S3Model
+    ModelCls = {"shared_private": S5SPModel,
+                "shared_private_sage": S5SPSageModel}.get(cfg.get("model"), S3Model)
     model = ModelCls(data["Xr"].shape[1], data["Xa"].shape[1], cfg, d_rr).to(DEVICE)
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     mu = None
@@ -648,7 +706,7 @@ for combo in sorted(cross, key=lambda c: sum(r for _, r in cross[c]) / len(cross
 json.dump({"borda": {c: [{"dataset": d, "borda": b} for d, b in v] for c, v in cross.items()}},
           open(os.path.join(OUT, "summary.json"), "w"), indent=2)
 git_push(["runs/s5-notebook/summary.json", "runs/s5-notebook/registry.jsonl"], "s5-notebook: summary + registry")
-print("\\nAll Stage-3 embeddings saved under", OUT)
+print("\\nAll Stage-5 embeddings saved under", OUT)
 '''))
 
 cells.append(md('''## Notes
