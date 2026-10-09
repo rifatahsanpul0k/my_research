@@ -110,13 +110,20 @@ try:
     print("GitHub sync ready")
 except Exception as e:
     GIT_OK = False
-    print("GitHub sync unavailable (local save only):", e)
+    _safe = str(e).replace(_b64, "***") if "_b64" in dir() else str(e)
+    print("GitHub sync unavailable (local save only):", _safe)
+
+def _scrub(s):
+    # never print the PAT: it lives inside _GIT's auth header
+    try:
+        return str(s).replace(_b64, "***")
+    except NameError:
+        return str(s)
 
 def git_push(paths, msg):
     if not GIT_OK:
         return
-    try:
-        # CORRECT ORDER: commit local changes FIRST, then pull --rebase, then push.
+    try:        # CORRECT ORDER: commit local changes FIRST, then pull --rebase, then push.
         # (Pulling before committing fails with "unstaged changes" once the registry
         # is a tracked file — which broke every push after the first combo.)
         sh("git", "add", *paths)
@@ -128,7 +135,7 @@ def git_push(paths, msg):
         sh(*_GIT, "push", "origin", "main")
         print("pushed:", msg)
     except Exception as e:
-        print("push failed (continuing):", e)
+        print("push failed (continuing):", _scrub(e))
 '''))
 
 cells.append(code('''# ---------- data (identical preprocessing to the sweep; cached once) ----------
@@ -371,8 +378,10 @@ def cross_modal_agreement(Xr, Xa, k=15):
     return float(np.mean(ov))
 
 def resolve_lam_dis(cfg, data):
-    # Adaptive disentanglement: scale λ_dis by cross-modal DISagreement.
+    # Explicit override wins (for the sweep); then adaptive; then fixed default.
     # Redundant modalities (high agreement) -> keep them together; complementary -> split.
+    if cfg.get("lam_dis") is not None:
+        return cfg["lam_dis"]
     if cfg.get("adapt_disentangle") and XMODAL:
         A = XMODAL[data["_ds"]]
         return 0.2 * (1.0 - A)
@@ -544,6 +553,9 @@ COMBINATIONS = [
     ("S5N-SP-sage",         dict(model="shared_private_sage")),
     ("S5N-SP-sage-nodis",   dict(model="shared_private_sage", disentangle=False)),
     ("S5N-SP-sage-adapt",   dict(model="shared_private_sage", adapt_disentangle=True)),
+    ("S5N-dis005",          dict(model="shared_private_sage", lam_dis=0.05)),
+    ("S5N-dis04",           dict(model="shared_private_sage", lam_dis=0.4)),
+    ("S5N-nograph",         dict(model="shared_private_sage", spatial="none")),
 ]
 print(f"{len(COMBINATIONS)} combinations registered")
 '''))
