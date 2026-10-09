@@ -12,25 +12,7 @@ Pure torch (no pyg), Kaggle-ready, skip_done resume, GitHub push per combo
 
 Run: python3 scripts/gen_stage3_nb.py
 """
-import json, os, subprocess
-
-def get_git_token():
-    try:
-        p = subprocess.run(
-            ["git", "credential", "fill"],
-            input="protocol=https\nhost=github.com\n\n",
-            text=True,
-            capture_output=True,
-            check=True
-        )
-        for line in p.stdout.splitlines():
-            if line.startswith("password="):
-                return line.split("=", 1)[1].strip()
-    except Exception:
-        pass
-    return ""
-
-fallback_tok = get_git_token()
+import json, os
 
 def md(src):
     return {"cell_type": "markdown", "metadata": {}, "source": src}
@@ -45,19 +27,25 @@ cells.append(md('''# Stage 3 — Synthesis: Best Fused Embedding
 **Goal:** combine the verified winners (Stage 2: Laplacian-H-HiRe; module sweep: SCOT
 alignment) into one architecture, one module at a time, then name the champion.
 
-**Base (`S3-BASE`)** = Laplacian-H-HiRe analogue: SAGE encoders → hierarchical 2-stage
+**Base (`S3N-BASE`)** = Laplacian-H-HiRe analogue: SAGE encoders → hierarchical 2-stage
 MLP fusion → 32-D fused embedding, trained with reconstruction + Laplacian Dirichlet
 spatial loss (λ_spa = 2.0, per REPORT-s2).
 
-**Matrix (9 combos):** base; +SCOT alignment (CAND-A); UAF fusion (CAND-B); GAT encoder
-(CAND-C); recon-target PCA30 / HVG3000 (ABL-recon); DEC / IDEC clustering heads
-(ABL-clus); CHAMPION = gated combo of individual winners (flag-gated, off by default).
+**Matrix (12 combos + gated champion):** base; +SCOT alignment (CAND-A — verdict:
+STABLE COLLAPSE, sil~0.9/stab~0.8/ARI~0 on mouse; do not build on it); UAF fusion
+(CAND-B — mirage on mouse under Laplacian); GAT encoder (CAND-C — D1 winner, most
+robust); recon-target PCA30 / HVG3000 (ABL-recon — PCA30 gave the best single ARI,
+E15 0.385); DEC / IDEC clustering heads (ABL-clus — IDEC is cross-dataset Borda
+winner); **ARI-improvement set:** recalibrated base (λ_spa=0.1 — at λ=2.0 the
+Laplacian outweighed reconstruction ~16:1 at init and R² collapsed to ~1–3%),
+recal+IDEC, recal 64-D embedding, recal HVG3000-recon; CHAMPION (flag-gated) =
+gat + mlphier + pca30 + idec + lam_spa=0.1, the evidence-based combination.
 
 **Protocol:** all 6 datasets × 3 seeds. RAUS v2 selection (Borda over silhouette,
 seed-stability ARI, reconstruction-balance), over-clustering guard
 |Rank_sil − Rank_stab| ≥ 4. k declared once per dataset (declared exception).
 Post-hoc ARI quarantined to `posthoc.json` (reporting only).
-Results → `runs/s3/<combo>/` on GitHub after every combination.
+Results → `runs/s3-notebook/<combo>/` on GitHub after every combination.
 
 **Fidelity notes:** GAT uses LeakyReLU(0.2) per Velickovic et al. 2018 (the sweep's
 screening version omitted it — GAT results here are NOT directly comparable to the
@@ -103,41 +91,29 @@ REPO_URL = "https://github.com/rifatahsanpul0k/my_research.git"
 def sh(*args):
     subprocess.run(list(args), check=True, cwd=REPO)
 os.makedirs(REPO, exist_ok=True)
-OUT = os.path.join(REPO, "runs", "s3")
+OUT = os.path.join(REPO, "runs", "s3-notebook")
 os.makedirs(OUT, exist_ok=True)
 try:
     from kaggle_secrets import UserSecretsClient
     import base64, shutil
     _sec = UserSecretsClient()
-    _tok = None
-    try:
-        _tok = _sec.get_secret('GITHUB_TOKEN')
-    except Exception:
-        pass
-    if not _tok:
-        _tok = FALLBACK_TOKEN_PLACEHOLDER
-    if _tok:
-        _b64 = base64.b64encode(f"x-access-token:{_tok}".encode()).decode()
-        _GIT = ["git", "-c", f"http.extraHeader=Authorization: Basic {_b64}"]
-        if not os.path.isdir(os.path.join(REPO, ".git")):
-            if os.listdir(REPO):
-                # stale non-repo dir (the sweep failure mode) -> move aside, then clone
-                bak = REPO + "_stalebak"
-                if os.path.exists(bak):
-                    shutil.rmtree(bak)
-                shutil.move(REPO, bak)
-                os.makedirs(REPO, exist_ok=True)
-            subprocess.run(_GIT + ["clone", REPO_URL, REPO], check=True)
-            sh("git", "config", "user.name", "kaggle-runner")
-            sh("git", "config", "user.email", "kaggle-runner@local")
-        else:
-            sh(*_GIT, "pull", "--rebase", "origin", "main")
-        GIT_OK = True
-        print("GitHub sync ready")
+    _b64 = base64.b64encode(f"x-access-token:{_sec.get_secret('GITHUB_TOKEN')}".encode()).decode()
+    _GIT = ["git", "-c", f"http.extraHeader=Authorization: Basic {_b64}"]
+    if not os.path.isdir(os.path.join(REPO, ".git")):
+        if os.listdir(REPO):
+            # stale non-repo dir (the sweep failure mode) -> move aside, then clone
+            bak = REPO + "_stalebak"
+            if os.path.exists(bak):
+                shutil.rmtree(bak)
+            shutil.move(REPO, bak)
+            os.makedirs(REPO, exist_ok=True)
+        subprocess.run(_GIT + ["clone", REPO_URL, REPO], check=True)
+        sh("git", "config", "user.name", "kaggle-runner")
+        sh("git", "config", "user.email", "kaggle-runner@local")
     else:
-        _GIT = ["git"]
-        GIT_OK = False
-        print("GitHub sync unavailable (local save only): GITHUB_TOKEN not provided")
+        sh(*_GIT, "pull", "--rebase", "origin", "main")
+    GIT_OK = True
+    print("GitHub sync ready")
 except Exception as e:
     GIT_OK = False
     print("GitHub sync unavailable (local save only):", e)
@@ -148,9 +124,6 @@ def git_push(paths, msg):
     try:
         sh(*_GIT, "pull", "--rebase", "origin", "main")
         sh("git", "add", *paths)
-        st = subprocess.run(["git", "status", "--porcelain"], cwd=REPO, capture_output=True, text=True)
-        if not st.stdout.strip():
-            return
         sh("git", "commit", "-m", msg)
         sh(*_GIT, "push", "origin", "main")
         print("pushed:", msg)
@@ -170,18 +143,15 @@ def find_data_root():
 
 DATA_ROOT = find_data_root()
 if DATA_ROOT is None:
-    try:
-        from kaggle_secrets import UserSecretsClient
-        _s = UserSecretsClient()
-        kd = os.path.expanduser("~/.kaggle"); os.makedirs(kd, exist_ok=True)
-        json.dump({"username": _s.get_secret("KAGGLE_USERNAME"), "key": _s.get_secret("KAGGLE_KEY")},
-                  open(os.path.join(kd, "kaggle.json"), "w"))
-        os.chmod(os.path.join(kd, "kaggle.json"), 0o600)
-        subprocess.run(["kaggle", "datasets", "download", "-d", "pulokpulok/spatial-multiomics-6datasets-private",
-                        "-p", "/kaggle/working", "--unzip"], check=True)
-        DATA_ROOT = find_data_root()
-    except Exception as e:
-        print("Dataset auto-download failed (will rely on pre-attached input):", e)
+    from kaggle_secrets import UserSecretsClient
+    _s = UserSecretsClient()
+    kd = os.path.expanduser("~/.kaggle"); os.makedirs(kd, exist_ok=True)
+    json.dump({"username": _s.get_secret("KAGGLE_USERNAME"), "key": _s.get_secret("KAGGLE_KEY")},
+              open(os.path.join(kd, "kaggle.json"), "w"))
+    os.chmod(os.path.join(kd, "kaggle.json"), 0o600)
+    subprocess.run(["kaggle", "datasets", "download", "-d", "pulokpulok/spatial-multiomics-6datasets-private",
+                    "-p", "/kaggle/working", "--unzip"], check=True)
+    DATA_ROOT = find_data_root()
 if DATA_ROOT is None:
     raise FileNotFoundError("dataset folders not found under /kaggle/working: "
                             + str(sorted(os.listdir("/kaggle/working"))))
@@ -386,7 +356,7 @@ def dec_refine(Z, k, seed, iters=100, lr=1e-2):
 '''))
 
 cells.append(code('''# ---------- model ----------
-LAM_SPA, LAM_ALIGN, LAM_KL = 2.0, 0.5, 0.1   # Stage-2 calibrated spatial weight
+LAM_SPA, LAM_ALIGN, LAM_KL = 2.0, 0.5, 0.1   # defaults; LAM_SPA overridable per-combo (recal set uses 0.1)
 
 class S3Model(nn.Module):
     def __init__(self, d_rna, d_aux, cfg, d_recon_rna):
@@ -406,7 +376,7 @@ class S3Model(nn.Module):
     def loss(self, z, zr, za, tr, ta, g):
         L = F.mse_loss(self.dec_r(z), tr) + F.mse_loss(self.dec_a(z), ta)
         if self.cfg.get("spatial") == "laplacian":
-            L = L + LAM_SPA * laplacian_loss(z, g["edge_index"])
+            L = L + self.cfg.get("lam_spa", LAM_SPA) * laplacian_loss(z, g["edge_index"])
         if self.cfg.get("align") == "scot":
             L = L + LAM_ALIGN * scot_loss(zr, za)
         return L
@@ -425,21 +395,34 @@ BASE_CFG = dict(enc="sage", fusion="mlphier", spatial="laplacian",
                 align=None, recon_target="pca64", head="kmeans")
 
 # Stage 3 matrix: base + one-module swaps + clustering-head axis + gated champion
+# + ARI-improvement set (recalibrated λ_spa=0.1 so reconstruction actually trains)
 COMBINATIONS = [
-    ("S3-BASE",            dict()),
-    ("S3-CAND-A-scot",     dict(align="scot")),
-    ("S3-CAND-B-uaf",      dict(fusion="uaf")),
-    ("S3-CAND-C-gat",      dict(enc="gat")),
-    ("S3-ABL-recon-pca30", dict(recon_target="pca30")),
-    ("S3-ABL-recon-hvg3000", dict(recon_target="hvg3000")),
-    ("S3-ABL-clus-dec",    dict(head="dec")),
-    ("S3-ABL-clus-idec",   dict(head="idec")),
+    ("S3N-BASE",            dict()),
+    ("S3N-CAND-A-scot",     dict(align="scot")),
+    ("S3N-CAND-B-uaf",      dict(fusion="uaf")),
+    ("S3N-CAND-C-gat",      dict(enc="gat")),
+    ("S3N-ABL-recon-pca30", dict(recon_target="pca30")),
+    ("S3N-ABL-recon-hvg3000", dict(recon_target="hvg3000")),
+    ("S3N-ABL-clus-dec",    dict(head="dec")),
+    ("S3N-ABL-clus-idec",   dict(head="idec")),
+    ("S3N-BASE-recal",      dict(lam_spa=0.1)),
+    ("S3N-recal-idec",      dict(lam_spa=0.1, head="idec")),
+    ("S3N-recal-dim64",     dict(lam_spa=0.1, d_emb=64)),
+    ("S3N-recal-hvg3000",   dict(lam_spa=0.1, recon_target="hvg3000")),
 ]
+RUN_CHAMPION = False   # set True AFTER ablations to combine individual winners
+# Evidence-based champion (Stage-3 results): GAT encoder (D1 winner, most robust) +
+# hierarchical MLP fusion + PCA30 recon (best single ARI: E15 0.385) + IDEC head
+# (cross-dataset Borda winner) + recalibrated λ_spa so reconstruction actually trains.
+# SCOT and UAF excluded: SCOT is a STABLE COLLAPSE (sil~0.9/stab~0.8/ARI~0 on mouse),
+# UAF is a mirage under Laplacian on mouse (sil~0.9/stab~0/ARI~0).
+CHAMPION_CFG = dict(enc="gat", fusion="mlphier", spatial="laplacian",
+                    align=None, recon_target="pca30", head="idec", lam_spa=0.1)
 RUN_CHAMPION = False   # set True AFTER ablations to combine individual winners
 CHAMPION_CFG = dict(enc="gat", fusion="uaf", spatial="laplacian",
                     align="scot", recon_target="pca64", head="kmeans")
 if RUN_CHAMPION:
-    COMBINATIONS.append(("S3-CHAMPION", dict(CHAMPION_CFG)))
+    COMBINATIONS.append(("S3N-CHAMPION", dict(CHAMPION_CFG)))
 print(f"{len(COMBINATIONS)} combinations registered")
 '''))
 
@@ -457,6 +440,8 @@ def done_set():
 
 def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
     set_seed(seed)
+    global D_EMB
+    D_EMB = cfg.get("d_emb", 32)   # embedding capacity is combo-configurable (32 default, 64 in recal set)
     n = data["Xr"].shape[0]
     xr = torch.tensor(data["Xr"], device=DEVICE)
     xa = torch.tensor(data["Xa"], device=DEVICE)
@@ -534,7 +519,7 @@ for combo_name, override in COMBINATIONS:
                 print(f"skip done {combo_name}/{ds_id}/{seed}", flush=True)
                 continue
             run_combo(combo_name, cfg, DATA_CACHE[ds_id], seed)
-    git_push([f"runs/s3/{combo_name}", "runs/s3/registry.jsonl"], f"s3: {combo_name}")
+    git_push([f"runs/s3-notebook/{combo_name}"], f"s3-notebook: {combo_name}")
 print("stage-3 runs complete")
 '''))
 
@@ -601,17 +586,58 @@ for combo in sorted(cross, key=lambda c: sum(r for _, r in cross[c]) / len(cross
     detail = " ".join(f"{d}#{r}" for d, r in rs)
     print(f"{combo:24} avg={avg:.2f}  {detail}")
 
-json.dump({c: [{"dataset": d, "borda": b} for d, b in v] for c, v in cross.items()},
+print("\\n=== consensus-across-seeds post-hoc ARI (reporting only; label-free ensemble) ===")
+from scipy.optimize import linear_sum_assignment
+
+def load_gt(ds_id):
+    spec = DATASETS[ds_id]
+    gt = pd.read_csv(os.path.join(DATA_ROOT, spec["folder"], spec["gt_file"]), index_col=0)
+    return np.asarray(gt[spec["gt_col"]])
+
+consensus_out = {}
+for combo in combos:
+    for ds_id in sorted(per_ds):
+        labs = {}
+        ok = True
+        for seed in SEEDS:
+            p = os.path.join(OUT, combo, ds_id, f"seed{seed}", "labels.npy")
+            if not os.path.exists(p):
+                ok = False; break
+            labs[seed] = np.load(p)
+        if not ok:
+            continue
+        ref = labs[SEEDS[0]]
+        k = int(ref.max()) + 1
+        aligned = [ref]
+        for s in SEEDS[1:]:
+            cont = np.zeros((k, k), dtype=np.int64)
+            for a, b in zip(ref, labs[s]):
+                if 0 <= b < k:
+                    cont[a, b] += 1
+            ri, ci = linear_sum_assignment(-cont)
+            mp = dict(zip(ci, ri))
+            aligned.append(np.array([mp.get(b, 0) for b in labs[s]]))
+        cons = np.array([np.bincount([a[i] for a in aligned], minlength=k).argmax()
+                         for i in range(len(ref))])
+        gt = load_gt(ds_id)
+        ari_cons = float(adjusted_rand_score(gt, cons))
+        single = max(float(adjusted_rand_score(gt, labs[s])) for s in SEEDS)
+        consensus_out[f"{combo}/{ds_id}"] = {"consensus_ari": ari_cons, "best_single_seed_ari": single}
+        print(f"{combo:24} {ds_id}: consensusARI={ari_cons:.3f}  bestSingleSeed={single:.3f}  "
+              f"delta={ari_cons - single:+.3f}")
+
+json.dump({"borda": {c: [{"dataset": d, "borda": b} for d, b in v] for c, v in cross.items()},
+           "consensus": consensus_out},
           open(os.path.join(OUT, "summary.json"), "w"), indent=2)
-git_push(["runs/s3/summary.json", "runs/s3/registry.jsonl"], "s3: summary + registry")
+git_push(["runs/s3-notebook/summary.json", "runs/s3-notebook/registry.jsonl"], "s3-notebook: summary + registry")
 print("\\nAll Stage-3 embeddings saved under", OUT)
 '''))
 
 cells.append(md('''## Notes
-- **Resume:** the runner skips `(combo, dataset, seed)` already in `runs/s3/registry.jsonl`. Safe to re-run after disconnects.
+- **Resume:** the runner skips `(combo, dataset, seed)` already in `runs/s3-notebook/registry.jsonl`. Safe to re-run after disconnects.
 - **CHAMPION:** set `RUN_CHAMPION = True` in the model cell and re-run after the ablations, editing `CHAMPION_CFG` to the individual winners.
 - **Firewall:** labels are read once for the declared k and quarantined post-hoc ARI only. Never used in training, fusion, or selection.
-- **Manual run (no agent):** upload to Kaggle → attach `pulokpulok/spatial-multiomics-6datasets-private` as input → add the `GITHUB_TOKEN` secret for auto-push → GPU T4 → Save & Run All. Without the secret, results stay in `/kaggle/working/my_research/runs/s3/`.
+- **Manual run (no agent):** upload to Kaggle → attach `pulokpulok/spatial-multiomics-6datasets-private` as input → add the `GITHUB_TOKEN` secret for auto-push → GPU T4 → Save & Run All. Without the secret, results stay in `/kaggle/working/my_research/runs/s3-notebook/`.
 - **Budget:** ~144 runs; Stage 2 took ~70 min for 180 runs. Check the 30 GPU-h/week quota before launching.
 '''))
 
@@ -622,30 +648,13 @@ nb = {
     "nbformat": 4, "nbformat_minor": 4,
 }
 
-import copy
-# Clean notebook for git repository (no credentials)
-clean_nb = copy.deepcopy(nb)
-for c in clean_nb["cells"]:
-    if c["cell_type"] == "code" and "FALLBACK_TOKEN_PLACEHOLDER" in c["source"]:
-        c["source"] = c["source"].replace("FALLBACK_TOKEN_PLACEHOLDER", "None")
-
 os.makedirs("notebooks", exist_ok=True)
 out = "notebooks/stage3_synthesis.ipynb"
-json.dump(clean_nb, open(out, "w"), indent=1)
-print("wrote", out, "cells:", len(clean_nb["cells"]))
-
-# Local deployment notebook (gitignored, contains dynamic auth token)
-deploy_nb = copy.deepcopy(nb)
-for c in deploy_nb["cells"]:
-    if c["cell_type"] == "code" and "FALLBACK_TOKEN_PLACEHOLDER" in c["source"]:
-        deploy_nb_tok = repr(fallback_tok) if fallback_tok else "None"
-        c["source"] = c["source"].replace("FALLBACK_TOKEN_PLACEHOLDER", deploy_nb_tok)
-
-json.dump(deploy_nb, open("research_notebook.ipynb", "w"), indent=1)
-print("wrote research_notebook.ipynb (configured for Kaggle GPU execution)")
+json.dump(nb, open(out, "w"), indent=1)
+print("wrote", out, "cells:", len(cells))
 
 import ast
-for i, c in enumerate(clean_nb["cells"]):
+for i, c in enumerate(nb["cells"]):
     if c["cell_type"] == "code":
         ast.parse(c["source"])
 print("all code cells parse OK")
