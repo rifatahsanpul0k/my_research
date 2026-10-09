@@ -1,0 +1,10 @@
+{
+  "silhouette": 0.09609750658273697,
+  "reconstruction_balance": 0.33584458339538836,
+  "r2_rna": 0.2125246524810791,
+  "r2_aux": 0.6330043077468872,
+  "k": 11,
+  "lam_spa_used": 0.1,
+  "wall_time_seconds": 2.05,
+  "agree_ari_idec_vs_kmeans": 0.8666368744733726
+}
