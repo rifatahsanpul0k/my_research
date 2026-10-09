@@ -3,15 +3,15 @@
     "S5N-adapt-modality": [
       {
         "dataset": "A1",
-        "borda": 8
+        "borda": 9
       },
       {
         "dataset": "D1",
-        "borda": 11
+        "borda": 12
       },
       {
         "dataset": "E11",
-        "borda": 17
+        "borda": 18
       },
       {
         "dataset": "E13",
@@ -19,17 +19,69 @@
       },
       {
         "dataset": "E15",
-        "borda": 12
+        "borda": 14
       },
       {
         "dataset": "E18",
-        "borda": 8
+        "borda": 9
+      }
+    ],
+    "S5N-SP-sage-adapt": [
+      {
+        "dataset": "A1",
+        "borda": 13
+      },
+      {
+        "dataset": "D1",
+        "borda": 15
+      },
+      {
+        "dataset": "E11",
+        "borda": 18
+      },
+      {
+        "dataset": "E13",
+        "borda": 17
+      },
+      {
+        "dataset": "E15",
+        "borda": 10
+      },
+      {
+        "dataset": "E18",
+        "borda": 15
       }
     ],
     "S5N-BASE": [
       {
         "dataset": "A1",
+        "borda": 14
+      },
+      {
+        "dataset": "D1",
+        "borda": 15
+      },
+      {
+        "dataset": "E11",
+        "borda": 22
+      },
+      {
+        "dataset": "E13",
+        "borda": 8
+      },
+      {
+        "dataset": "E15",
         "borda": 12
+      },
+      {
+        "dataset": "E18",
+        "borda": 10
+      }
+    ],
+    "S5N-SP-sage-nodis": [
+      {
+        "dataset": "A1",
+        "borda": 14
       },
       {
         "dataset": "D1",
@@ -37,55 +89,55 @@
       },
       {
         "dataset": "E11",
-        "borda": 19
+        "borda": 9
       },
       {
         "dataset": "E13",
-        "borda": 7
+        "borda": 16
       },
       {
         "dataset": "E15",
-        "borda": 10
+        "borda": 9
       },
       {
         "dataset": "E18",
-        "borda": 9
+        "borda": 16
       }
     ],
     "S5N-SP-sage": [
       {
         "dataset": "A1",
-        "borda": 12
+        "borda": 14
       },
       {
         "dataset": "D1",
-        "borda": 15
+        "borda": 16
       },
       {
         "dataset": "E11",
-        "borda": 15
+        "borda": 16
       },
       {
         "dataset": "E13",
-        "borda": 15
+        "borda": 16
       },
       {
         "dataset": "E15",
-        "borda": 9
+        "borda": 11
       },
       {
         "dataset": "E18",
-        "borda": 13
+        "borda": 14
       }
     ],
     "S5N-shared-private": [
       {
         "dataset": "A1",
-        "borda": 12
+        "borda": 14
       },
       {
         "dataset": "D1",
-        "borda": 10
+        "borda": 11
       },
       {
         "dataset": "E11",
@@ -93,29 +145,29 @@
       },
       {
         "dataset": "E13",
-        "borda": 14
+        "borda": 15
       },
       {
         "dataset": "E15",
-        "borda": 13
+        "borda": 15
       },
       {
         "dataset": "E18",
-        "borda": 8
+        "borda": 9
       }
     ],
     "S5N-adapt-spatial": [
       {
         "dataset": "A1",
-        "borda": 13
+        "borda": 15
       },
       {
         "dataset": "D1",
-        "borda": 13
+        "borda": 15
       },
       {
         "dataset": "E11",
-        "borda": 14
+        "borda": 15
       },
       {
         "dataset": "E13",
@@ -123,47 +175,21 @@
       },
       {
         "dataset": "E15",
-        "borda": 11
-      },
-      {
-        "dataset": "E18",
-        "borda": 18
-      }
-    ],
-    "S5N-SP-sage-nodis": [
-      {
-        "dataset": "A1",
         "borda": 13
       },
       {
-        "dataset": "D1",
-        "borda": 12
-      },
-      {
-        "dataset": "E11",
-        "borda": 9
-      },
-      {
-        "dataset": "E13",
-        "borda": 15
-      },
-      {
-        "dataset": "E15",
-        "borda": 8
-      },
-      {
         "dataset": "E18",
-        "borda": 14
+        "borda": 20
       }
     ],
     "S5N-generalized": [
       {
         "dataset": "A1",
-        "borda": 14
+        "borda": 15
       },
       {
         "dataset": "D1",
-        "borda": 10
+        "borda": 11
       },
       {
         "dataset": "E11",
@@ -171,15 +197,15 @@
       },
       {
         "dataset": "E13",
-        "borda": 20
+        "borda": 23
       },
       {
         "dataset": "E15",
-        "borda": 21
+        "borda": 24
       },
       {
         "dataset": "E18",
-        "borda": 14
+        "borda": 15
       }
     ]
   }
