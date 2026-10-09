@@ -105,16 +105,81 @@ class GATConv(nn.Module):
 
 
 # =========================================================================
-# STAGE 2 CANDIDATE ARCHITECTURES & ABLATIONS
+# STAGE 2 & 3 CANDIDATE ARCHITECTURES, FUSION & CLUSTERING MODULES
 # =========================================================================
+
+class UAFFusionStage(nn.Module):
+    """Uncertainty-Aware Fusion (UAF-Gaussian) per dimension."""
+    def __init__(self, dim: int):
+        super().__init__()
+        self.lr = nn.Linear(dim, dim)
+        self.la = nn.Linear(dim, dim)
+        self.out = nn.Sequential(nn.Linear(dim, dim), nn.BatchNorm1d(dim), nn.ReLU())
+
+    def forward(self, zr: torch.Tensor, za: torch.Tensor) -> torch.Tensor:
+        wr = torch.sigmoid(-self.lr(zr))
+        wa = torch.sigmoid(-self.la(za))
+        return self.out((wr * zr + wa * za) / (wr + wa + 1e-9))
+
+
+def sinkhorn(C: torch.Tensor, eps: float = 0.1, n_iter: int = 30) -> torch.Tensor:
+    K = torch.exp(-C / eps)
+    n, m = C.shape
+    u = torch.full((n,), 1.0 / n, device=C.device)
+    v = torch.full((m,), 1.0 / m, device=C.device)
+    for _ in range(n_iter):
+        u = (1.0 / n) / (K @ v + 1e-9)
+        v = (1.0 / m) / (K.t() @ u + 1e-9)
+    return torch.diag(u) @ K @ torch.diag(v)
+
+
+def scot_loss(zr: torch.Tensor, za: torch.Tensor, m: int = 512, eps: float = 0.1) -> torch.Tensor:
+    n = zr.size(0)
+    if n > m:
+        idx = torch.randperm(n, device=zr.device)[:m]
+        zr_sub, za_sub = zr[idx], za[idx]
+    else:
+        zr_sub, za_sub = zr, za
+    C = torch.cdist(zr_sub, za_sub)
+    C_norm = C / (C.mean() + 1e-9)
+    P = sinkhorn(C_norm, eps)
+    return (P * C_norm).sum()
+
+
+class ClusterHead(nn.Module):
+    """Student-t DEC / IDEC clustering head for learnable cluster axis."""
+    def __init__(self, num_clusters: int, in_features: int, alpha: float = 1.0):
+        super().__init__()
+        self.num_clusters = num_clusters
+        self.alpha = alpha
+        self.cluster_centers = nn.Parameter(torch.Tensor(num_clusters, in_features))
+        nn.init.xavier_uniform_(self.cluster_centers)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        norm_squared = torch.sum((x.unsqueeze(1) - self.cluster_centers.unsqueeze(0)) ** 2, dim=2)
+        num = (1.0 + norm_squared / self.alpha) ** (-(self.alpha + 1.0) / 2.0)
+        q = num / torch.sum(num, dim=1, keepdim=True)
+        return q
+
+
+def target_distribution(q: torch.Tensor) -> torch.Tensor:
+    f = q.sum(dim=0)
+    p = (q ** 2) / (f + 1e-9)
+    p = p / p.sum(dim=1, keepdim=True)
+    return p
+
+
+def kl_clustering_loss(q: torch.Tensor, p: torch.Tensor) -> torch.Tensor:
+    return F.kl_div(q.log(), p, reduction="batchmean")
+
 
 class Model_H_HiRe(nn.Module):
     """
-    Candidate 1: Hierarchical High-Dim Autoencoder with Calibrated Spatial Regularization (H-HiRe).
-    Combines:
-    - 2-Stage Hierarchical MLP fusion (EXP03)
-    - Full 3000 HVG raw feature reconstruction (EXP05)
-    - Inductive SAGEConv message passing to avoid spectral over-smoothing (EXP01)
+    Stage 2 Winner & Stage 3 Base: Hierarchical High-Dim Autoencoder.
+    Supports:
+    - Fusion: '2stage' (MLP), 'uaf' (Uncertainty-Aware Gaussian), 'cross_attn', 'concat'
+    - Backbone: 'sage' (SAGEConv), 'gat' (GATConv), 'gcn' (GCNConv)
+    - Recon: 'raw' (3000-HVG), 'pca30', 'pca128', 'decoupled'
     """
     def __init__(
         self,
@@ -130,6 +195,7 @@ class Model_H_HiRe(nn.Module):
         self.fusion_type = fusion
         self.recon_mode = recon_mode
         self.backbone_type = backbone
+        self.last_z_rna = None
 
         def make_conv(in_d, out_d):
             if backbone == "sage":
@@ -150,6 +216,9 @@ class Model_H_HiRe(nn.Module):
         if fusion == "2stage":
             self.fusion_rna = nn.Sequential(nn.Linear(2 * out_dim, out_dim), nn.BatchNorm1d(out_dim), nn.ReLU())
             self.fusion_joint = nn.Sequential(nn.Linear(2 * out_dim, out_dim), nn.BatchNorm1d(out_dim), nn.ReLU())
+        elif fusion == "uaf":
+            self.fusion_rna = UAFFusionStage(out_dim)
+            self.fusion_joint = UAFFusionStage(out_dim)
         elif fusion == "cross_attn":
             self.attn = nn.MultiheadAttention(embed_dim=out_dim, num_heads=4, batch_first=True)
             self.fusion_out = nn.Linear(out_dim, out_dim)
@@ -174,12 +243,19 @@ class Model_H_HiRe(nn.Module):
         if self.fusion_type == "2stage":
             z_rna = self.fusion_rna(torch.cat([z_sim, z_dist], dim=1))
             z_final = self.fusion_joint(torch.cat([z_rna, z_mod2], dim=1))
+        elif self.fusion_type == "uaf":
+            z_rna = self.fusion_rna(z_sim, z_dist)
+            z_final = self.fusion_joint(z_rna, z_mod2)
         elif self.fusion_type == "cross_attn":
+            z_rna = (z_sim + z_dist) * 0.5
             stack = torch.stack([z_sim, z_dist, z_mod2], dim=1)
             attn_out, _ = self.attn(stack, stack, stack)
             z_final = self.fusion_out(attn_out.mean(dim=1))
         else:
+            z_rna = (z_sim + z_dist) * 0.5
             z_final = self.fusion_joint(torch.cat([z_sim, z_dist, z_mod2], dim=1))
+
+        self.last_z_rna = z_rna
 
         shared = self.dec_shared(z_final)
         rec_rna = self.dec_rna(shared)

@@ -122,8 +122,8 @@ def load_dataset_features_unsupervised(
     base_dir: str,
     cfg: Dict[str, Any],
     n_hvg: int = 3000,
-    n_comps_rna: int = 64,
-    n_comps_mod2: int = 64
+    n_comps_rna: int = 128,
+    n_comps_mod2: int = 128
 ) -> Dict[str, Any]:
     rna_path = os.path.join(base_dir, "adata_RNA.h5ad")
     mod2_path = os.path.join(base_dir, cfg["mod2_file"])
