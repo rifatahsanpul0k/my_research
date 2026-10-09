@@ -117,6 +117,7 @@ try:
             sh("git", "config", "user.email", "kaggle-runner@local")
         else:
             sh(*_GIT, "pull", "--rebase", "origin", "main")
+        os.makedirs(OUT, exist_ok=True)
         GIT_OK = True
         print("GitHub sync ready")
     else:
@@ -132,7 +133,9 @@ def git_push(paths, msg):
         return
     try:
         sh(*_GIT, "pull", "--rebase", "origin", "main")
-        sh("git", "add", *paths)
+        for p in paths:
+            if os.path.exists(os.path.join(REPO, p)):
+                sh("git", "add", p)
         st = subprocess.run(["git", "status", "--porcelain"], cwd=REPO, capture_output=True, text=True)
         if not st.stdout.strip():
             return
@@ -447,6 +450,7 @@ else:
     CALIB_LAMBDA = min(calib_results, key=lambda r: abs(r["r2_rna"] - 0.20))["lam_spa"]
     print(f"\\n--> Closest lambda_spa selected: {CALIB_LAMBDA}")
 
+os.makedirs(OUT, exist_ok=True)
 json.dump({"calibrated_lambda": CALIB_LAMBDA, "trajectory": calib_results},
           open(os.path.join(OUT, "calibration_e15.json"), "w"), indent=2)
 git_push(["runs/s4/calibration_e15.json"], f"s4: calibrated lambda_spa = {CALIB_LAMBDA}")
@@ -514,6 +518,7 @@ for combo_name, cfg in COMBINATIONS:
                 print(f"skip done {combo_name}/{ds_id}/{seed}", flush=True)
                 continue
             run_combo(combo_name, cfg, DATA_CACHE[ds_id], seed)
+            git_push([f"runs/s4/{combo_name}/{ds_id}/seed{seed}", "runs/s4/registry.jsonl"], f"s4: {combo_name}/{ds_id}/seed{seed}")
     git_push([f"runs/s4/{combo_name}", "runs/s4/registry.jsonl"], f"s4: {combo_name}")
 
 print("All Stage 4 runs complete!")
@@ -584,6 +589,7 @@ for combo in sorted(cross, key=lambda c: sum(r for _, r in cross[c])):
     detail = " ".join(f"{d}#{r}" for d, r in rs)
     print(f"{combo:16} avg_borda={avg:5.2f}  {detail}")
 
+os.makedirs(OUT, exist_ok=True)
 json.dump({c: [{"dataset": d, "borda_v3b": b} for d, b in v] for c, v in cross.items()},
           open(os.path.join(OUT, "summary.json"), "w"), indent=2)
 git_push(["runs/s4/summary.json", "runs/s4/registry.jsonl"], "s4: summary + registry")
