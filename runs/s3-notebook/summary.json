@@ -1,0 +1,606 @@
+{
+  "borda": {
+    "S3N-ABL-clus-idec": [
+      {
+        "dataset": "A1",
+        "borda": 12
+      },
+      {
+        "dataset": "D1",
+        "borda": 14
+      },
+      {
+        "dataset": "E11",
+        "borda": 10
+      },
+      {
+        "dataset": "E13",
+        "borda": 20
+      },
+      {
+        "dataset": "E15",
+        "borda": 20
+      },
+      {
+        "dataset": "E18",
+        "borda": 20
+      }
+    ],
+    "S3N-BASE": [
+      {
+        "dataset": "A1",
+        "borda": 14
+      },
+      {
+        "dataset": "D1",
+        "borda": 19
+      },
+      {
+        "dataset": "E11",
+        "borda": 18
+      },
+      {
+        "dataset": "E13",
+        "borda": 17
+      },
+      {
+        "dataset": "E15",
+        "borda": 24
+      },
+      {
+        "dataset": "E18",
+        "borda": 17
+      }
+    ],
+    "S3N-ABL-clus-dec": [
+      {
+        "dataset": "A1",
+        "borda": 14
+      },
+      {
+        "dataset": "D1",
+        "borda": 24
+      },
+      {
+        "dataset": "E11",
+        "borda": 21
+      },
+      {
+        "dataset": "E13",
+        "borda": 21
+      },
+      {
+        "dataset": "E15",
+        "borda": 22
+      },
+      {
+        "dataset": "E18",
+        "borda": 24
+      }
+    ],
+    "S3N-recal-dim64": [
+      {
+        "dataset": "A1",
+        "borda": 16
+      },
+      {
+        "dataset": "D1",
+        "borda": 15
+      },
+      {
+        "dataset": "E11",
+        "borda": 19
+      },
+      {
+        "dataset": "E13",
+        "borda": 15
+      },
+      {
+        "dataset": "E15",
+        "borda": 14
+      },
+      {
+        "dataset": "E18",
+        "borda": 16
+      }
+    ],
+    "S3N-CAND-C-gat": [
+      {
+        "dataset": "A1",
+        "borda": 19
+      },
+      {
+        "dataset": "D1",
+        "borda": 8
+      },
+      {
+        "dataset": "E11",
+        "borda": 17
+      },
+      {
+        "dataset": "E13",
+        "borda": 20
+      },
+      {
+        "dataset": "E15",
+        "borda": 24
+      },
+      {
+        "dataset": "E18",
+        "borda": 21
+      }
+    ],
+    "S3N-ABL-recon-pca30": [
+      {
+        "dataset": "A1",
+        "borda": 20
+      },
+      {
+        "dataset": "D1",
+        "borda": 22
+      },
+      {
+        "dataset": "E11",
+        "borda": 24
+      },
+      {
+        "dataset": "E13",
+        "borda": 17
+      },
+      {
+        "dataset": "E15",
+        "borda": 20
+      },
+      {
+        "dataset": "E18",
+        "borda": 17
+      }
+    ],
+    "S3N-BASE-recal": [
+      {
+        "dataset": "A1",
+        "borda": 20
+      },
+      {
+        "dataset": "D1",
+        "borda": 23
+      },
+      {
+        "dataset": "E11",
+        "borda": 24
+      },
+      {
+        "dataset": "E13",
+        "borda": 24
+      },
+      {
+        "dataset": "E15",
+        "borda": 15
+      },
+      {
+        "dataset": "E18",
+        "borda": 19
+      }
+    ],
+    "S3N-recal-hvg3000": [
+      {
+        "dataset": "A1",
+        "borda": 22
+      },
+      {
+        "dataset": "D1",
+        "borda": 30
+      },
+      {
+        "dataset": "E11",
+        "borda": 19
+      },
+      {
+        "dataset": "E13",
+        "borda": 22
+      },
+      {
+        "dataset": "E15",
+        "borda": 26
+      },
+      {
+        "dataset": "E18",
+        "borda": 24
+      }
+    ],
+    "S3N-CAND-A-scot": [
+      {
+        "dataset": "A1",
+        "borda": 23
+      },
+      {
+        "dataset": "D1",
+        "borda": 22
+      },
+      {
+        "dataset": "E11",
+        "borda": 17
+      },
+      {
+        "dataset": "E13",
+        "borda": 17
+      },
+      {
+        "dataset": "E15",
+        "borda": 11
+      },
+      {
+        "dataset": "E18",
+        "borda": 13
+      }
+    ],
+    "S3N-recal-idec": [
+      {
+        "dataset": "A1",
+        "borda": 23
+      },
+      {
+        "dataset": "D1",
+        "borda": 20
+      },
+      {
+        "dataset": "E11",
+        "borda": 22
+      },
+      {
+        "dataset": "E13",
+        "borda": 17
+      },
+      {
+        "dataset": "E15",
+        "borda": 16
+      },
+      {
+        "dataset": "E18",
+        "borda": 17
+      }
+    ],
+    "S3N-CAND-B-uaf": [
+      {
+        "dataset": "A1",
+        "borda": 24
+      },
+      {
+        "dataset": "D1",
+        "borda": 16
+      },
+      {
+        "dataset": "E11",
+        "borda": 22
+      },
+      {
+        "dataset": "E13",
+        "borda": 22
+      },
+      {
+        "dataset": "E15",
+        "borda": 18
+      },
+      {
+        "dataset": "E18",
+        "borda": 22
+      }
+    ],
+    "S3N-ABL-recon-hvg3000": [
+      {
+        "dataset": "A1",
+        "borda": 27
+      },
+      {
+        "dataset": "D1",
+        "borda": 21
+      },
+      {
+        "dataset": "E11",
+        "borda": 21
+      },
+      {
+        "dataset": "E13",
+        "borda": 22
+      },
+      {
+        "dataset": "E15",
+        "borda": 24
+      },
+      {
+        "dataset": "E18",
+        "borda": 24
+      }
+    ]
+  },
+  "consensus": {
+    "S3N-BASE/A1": {
+      "consensus_ari": 0.21201065627263088,
+      "best_single_seed_ari": 0.21984820969498117
+    },
+    "S3N-BASE/D1": {
+      "consensus_ari": 0.1851416022842823,
+      "best_single_seed_ari": 0.19110961013207856
+    },
+    "S3N-BASE/E11": {
+      "consensus_ari": 0.29821053474413584,
+      "best_single_seed_ari": 0.3023982474346197
+    },
+    "S3N-BASE/E13": {
+      "consensus_ari": 0.2388356640673941,
+      "best_single_seed_ari": 0.2430141654835252
+    },
+    "S3N-BASE/E15": {
+      "consensus_ari": 0.3949365804949571,
+      "best_single_seed_ari": 0.3960346563028664
+    },
+    "S3N-BASE/E18": {
+      "consensus_ari": 0.2854965676790931,
+      "best_single_seed_ari": 0.2925951000595165
+    },
+    "S3N-CAND-A-scot/A1": {
+      "consensus_ari": 0.177277893720407,
+      "best_single_seed_ari": 0.17846336449226818
+    },
+    "S3N-CAND-A-scot/D1": {
+      "consensus_ari": 0.1555126873523239,
+      "best_single_seed_ari": 0.17092602319086642
+    },
+    "S3N-CAND-A-scot/E11": {
+      "consensus_ari": -0.01145402550380581,
+      "best_single_seed_ari": -0.0063812883752366045
+    },
+    "S3N-CAND-A-scot/E13": {
+      "consensus_ari": 0.003937519392251376,
+      "best_single_seed_ari": 0.010222695997058422
+    },
+    "S3N-CAND-A-scot/E15": {
+      "consensus_ari": 0.002949650966886815,
+      "best_single_seed_ari": 0.004462529819536501
+    },
+    "S3N-CAND-A-scot/E18": {
+      "consensus_ari": 0.038954072663964064,
+      "best_single_seed_ari": 0.04783728541815164
+    },
+    "S3N-CAND-B-uaf/A1": {
+      "consensus_ari": 0.17253346170868405,
+      "best_single_seed_ari": 0.18249877720056695
+    },
+    "S3N-CAND-B-uaf/D1": {
+      "consensus_ari": 0.1479514513755141,
+      "best_single_seed_ari": 0.16184978768274735
+    },
+    "S3N-CAND-B-uaf/E11": {
+      "consensus_ari": 0.0,
+      "best_single_seed_ari": 0.0003787799865346764
+    },
+    "S3N-CAND-B-uaf/E13": {
+      "consensus_ari": -9.418106440020516e-05,
+      "best_single_seed_ari": 0.033819059154858944
+    },
+    "S3N-CAND-B-uaf/E15": {
+      "consensus_ari": -3.402400340788889e-05,
+      "best_single_seed_ari": 0.31942909335812625
+    },
+    "S3N-CAND-B-uaf/E18": {
+      "consensus_ari": 0.001050979699090952,
+      "best_single_seed_ari": 0.19639288358028598
+    },
+    "S3N-CAND-C-gat/A1": {
+      "consensus_ari": 0.19132687236346646,
+      "best_single_seed_ari": 0.18475929856843828
+    },
+    "S3N-CAND-C-gat/D1": {
+      "consensus_ari": 0.18327903474183097,
+      "best_single_seed_ari": 0.19325040280060204
+    },
+    "S3N-CAND-C-gat/E11": {
+      "consensus_ari": 0.3168794807154362,
+      "best_single_seed_ari": 0.3051895451848322
+    },
+    "S3N-CAND-C-gat/E13": {
+      "consensus_ari": 0.19113613094744172,
+      "best_single_seed_ari": 0.2200814356105058
+    },
+    "S3N-CAND-C-gat/E15": {
+      "consensus_ari": 0.37592368215829713,
+      "best_single_seed_ari": 0.3902603448417757
+    },
+    "S3N-CAND-C-gat/E18": {
+      "consensus_ari": 0.28564179948712665,
+      "best_single_seed_ari": 0.330701900268542
+    },
+    "S3N-ABL-recon-pca30/A1": {
+      "consensus_ari": 0.18326269138318893,
+      "best_single_seed_ari": 0.18463704686970994
+    },
+    "S3N-ABL-recon-pca30/D1": {
+      "consensus_ari": 0.15899184381941625,
+      "best_single_seed_ari": 0.16558384432817
+    },
+    "S3N-ABL-recon-pca30/E11": {
+      "consensus_ari": 0.3174850215232481,
+      "best_single_seed_ari": 0.3300058283596517
+    },
+    "S3N-ABL-recon-pca30/E13": {
+      "consensus_ari": 0.23873662719923638,
+      "best_single_seed_ari": 0.2394645611720872
+    },
+    "S3N-ABL-recon-pca30/E15": {
+      "consensus_ari": 0.38633409866323704,
+      "best_single_seed_ari": 0.4201421148687193
+    },
+    "S3N-ABL-recon-pca30/E18": {
+      "consensus_ari": 0.29016250835129564,
+      "best_single_seed_ari": 0.2887301942582915
+    },
+    "S3N-ABL-recon-hvg3000/A1": {
+      "consensus_ari": 0.1780632823942491,
+      "best_single_seed_ari": 0.20100456765852537
+    },
+    "S3N-ABL-recon-hvg3000/D1": {
+      "consensus_ari": 0.1716022721990416,
+      "best_single_seed_ari": 0.17749568554458198
+    },
+    "S3N-ABL-recon-hvg3000/E11": {
+      "consensus_ari": 0.2356476528503883,
+      "best_single_seed_ari": 0.2869891572160056
+    },
+    "S3N-ABL-recon-hvg3000/E13": {
+      "consensus_ari": 0.21998771768165976,
+      "best_single_seed_ari": 0.222352141964079
+    },
+    "S3N-ABL-recon-hvg3000/E15": {
+      "consensus_ari": 0.3580947528317191,
+      "best_single_seed_ari": 0.3798176884152868
+    },
+    "S3N-ABL-recon-hvg3000/E18": {
+      "consensus_ari": 0.2539746687084707,
+      "best_single_seed_ari": 0.26557494856849756
+    },
+    "S3N-ABL-clus-dec/A1": {
+      "consensus_ari": 0.2005911265669405,
+      "best_single_seed_ari": 0.22529422925096543
+    },
+    "S3N-ABL-clus-dec/D1": {
+      "consensus_ari": 0.22058687785489794,
+      "best_single_seed_ari": 0.23039175804969766
+    },
+    "S3N-ABL-clus-dec/E11": {
+      "consensus_ari": 0.14327314415465237,
+      "best_single_seed_ari": 0.2714965646514327
+    },
+    "S3N-ABL-clus-dec/E13": {
+      "consensus_ari": 0.2789727052349812,
+      "best_single_seed_ari": 0.31321224324611097
+    },
+    "S3N-ABL-clus-dec/E15": {
+      "consensus_ari": 0.34502835359351536,
+      "best_single_seed_ari": 0.428886297066955
+    },
+    "S3N-ABL-clus-dec/E18": {
+      "consensus_ari": 0.15109745770236432,
+      "best_single_seed_ari": 0.35958822145222724
+    },
+    "S3N-ABL-clus-idec/A1": {
+      "consensus_ari": 0.1724510493497445,
+      "best_single_seed_ari": 0.1789344978703939
+    },
+    "S3N-ABL-clus-idec/D1": {
+      "consensus_ari": 0.17449675775123394,
+      "best_single_seed_ari": 0.1797013748255637
+    },
+    "S3N-ABL-clus-idec/E11": {
+      "consensus_ari": 0.33515671074525694,
+      "best_single_seed_ari": 0.32106071014005655
+    },
+    "S3N-ABL-clus-idec/E13": {
+      "consensus_ari": 0.25014653710067175,
+      "best_single_seed_ari": 0.2656320333295375
+    },
+    "S3N-ABL-clus-idec/E15": {
+      "consensus_ari": 0.30467759282389506,
+      "best_single_seed_ari": 0.3519736849263218
+    },
+    "S3N-ABL-clus-idec/E18": {
+      "consensus_ari": 0.3246125805835893,
+      "best_single_seed_ari": 0.356649955675275
+    },
+    "S3N-BASE-recal/A1": {
+      "consensus_ari": 0.21802467649948937,
+      "best_single_seed_ari": 0.22908154050410648
+    },
+    "S3N-BASE-recal/D1": {
+      "consensus_ari": 0.20253144541767548,
+      "best_single_seed_ari": 0.20040793392507364
+    },
+    "S3N-BASE-recal/E11": {
+      "consensus_ari": 0.22161345015445266,
+      "best_single_seed_ari": 0.36811489251008234
+    },
+    "S3N-BASE-recal/E13": {
+      "consensus_ari": 0.3368761595635168,
+      "best_single_seed_ari": 0.4379378355694011
+    },
+    "S3N-BASE-recal/E15": {
+      "consensus_ari": 0.47999145674146604,
+      "best_single_seed_ari": 0.4950304884769431
+    },
+    "S3N-BASE-recal/E18": {
+      "consensus_ari": 0.2852526477882817,
+      "best_single_seed_ari": 0.31014030553753186
+    },
+    "S3N-recal-idec/A1": {
+      "consensus_ari": 0.2261809322921587,
+      "best_single_seed_ari": 0.2356881622310018
+    },
+    "S3N-recal-idec/D1": {
+      "consensus_ari": 0.21567890365912154,
+      "best_single_seed_ari": 0.21277877692328093
+    },
+    "S3N-recal-idec/E11": {
+      "consensus_ari": 0.2738507112905737,
+      "best_single_seed_ari": 0.3794379511589405
+    },
+    "S3N-recal-idec/E13": {
+      "consensus_ari": 0.370304371229988,
+      "best_single_seed_ari": 0.4225206806611691
+    },
+    "S3N-recal-idec/E15": {
+      "consensus_ari": 0.519987757056726,
+      "best_single_seed_ari": 0.5139554065707381
+    },
+    "S3N-recal-idec/E18": {
+      "consensus_ari": 0.29188201792877305,
+      "best_single_seed_ari": 0.3273244183520505
+    },
+    "S3N-recal-dim64/A1": {
+      "consensus_ari": 0.2009660360294134,
+      "best_single_seed_ari": 0.21416355376432056
+    },
+    "S3N-recal-dim64/D1": {
+      "consensus_ari": 0.1964527973237165,
+      "best_single_seed_ari": 0.20261799649367276
+    },
+    "S3N-recal-dim64/E11": {
+      "consensus_ari": 0.3742071376823002,
+      "best_single_seed_ari": 0.4235783431327826
+    },
+    "S3N-recal-dim64/E13": {
+      "consensus_ari": 0.3491629085009758,
+      "best_single_seed_ari": 0.3462399010435205
+    },
+    "S3N-recal-dim64/E15": {
+      "consensus_ari": 0.47633452891961797,
+      "best_single_seed_ari": 0.47500570210453874
+    },
+    "S3N-recal-dim64/E18": {
+      "consensus_ari": 0.2998724589280629,
+      "best_single_seed_ari": 0.3553175613263332
+    },
+    "S3N-recal-hvg3000/A1": {
+      "consensus_ari": 0.21390938711732824,
+      "best_single_seed_ari": 0.2185299202070424
+    },
+    "S3N-recal-hvg3000/D1": {
+      "consensus_ari": 0.20693770749860624,
+      "best_single_seed_ari": 0.19491554870424024
+    },
+    "S3N-recal-hvg3000/E11": {
+      "consensus_ari": 0.12063118784808242,
+      "best_single_seed_ari": 0.23403940524480615
+    },
+    "S3N-recal-hvg3000/E13": {
+      "consensus_ari": 0.44569825702298244,
+      "best_single_seed_ari": 0.4466873087927066
+    },
+    "S3N-recal-hvg3000/E15": {
+      "consensus_ari": 0.5039624842097193,
+      "best_single_seed_ari": 0.5185434342422977
+    },
+    "S3N-recal-hvg3000/E18": {
+      "consensus_ari": 0.2888811296314358,
+      "best_single_seed_ari": 0.30890390574817966
+    }
+  }
+}
