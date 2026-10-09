@@ -661,7 +661,8 @@ for combo_name, override in COMBINATIONS:
                 print(f"skip done {combo_name}/{ds_id}/{seed}", flush=True)
                 continue
             run_combo(combo_name, cfg, DATA_CACHE[ds_id], seed)
-    git_push([f"runs/s5-notebook/{combo_name}"], f"s5-notebook: {combo_name}")
+    git_push([f"runs/s5-notebook/{combo_name}", "runs/s5-notebook/registry.jsonl"],
+             f"s5-notebook: {combo_name}")
 print("stage-5 runs complete")
 '''))
 
