@@ -22,5 +22,29 @@
   "head": "spherical",
   "mean_ari": 0.42907525642923666,
   "mean_sil": 0.0931981901327769
+ },
+ {
+  "combo": "S5N-BASE",
+  "dataset": "E13",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.41666029271773003,
+  "mean_sil": 0.2900168796380361
+ },
+ {
+  "combo": "S5N-BASE",
+  "dataset": "E15",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.5014376361319511,
+  "mean_sil": 0.34070419271787006
+ },
+ {
+  "combo": "S5N-BASE",
+  "dataset": "E18",
+  "transform": "pca24",
+  "head": "gmm",
+  "mean_ari": 0.3091705160621996,
+  "mean_sil": NaN
  }
 ]
