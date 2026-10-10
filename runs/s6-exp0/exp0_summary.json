@@ -94,5 +94,53 @@
   "head": "gmm",
   "mean_ari": 0.3148599768948735,
   "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-SP-sage-adapt",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.23281957085375043,
+  "mean_sil": 0.18439499661326408
+ },
+ {
+  "combo": "S5N-SP-sage-adapt",
+  "dataset": "D1",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.248321068138885,
+  "mean_sil": 0.1513876368602117
+ },
+ {
+  "combo": "S5N-SP-sage-adapt",
+  "dataset": "E11",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.43327002040473556,
+  "mean_sil": 0.04820559856792291
+ },
+ {
+  "combo": "S5N-SP-sage-adapt",
+  "dataset": "E13",
+  "transform": "pca24",
+  "head": "gmm",
+  "mean_ari": 0.4000378845329331,
+  "mean_sil": 0.1920216977596283
+ },
+ {
+  "combo": "S5N-SP-sage-adapt",
+  "dataset": "E15",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.4877445600471973,
+  "mean_sil": 0.3356400628884633
+ },
+ {
+  "combo": "S5N-SP-sage-adapt",
+  "dataset": "E18",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.3168788246706277,
+  "mean_sil": NaN
  }
 ]
