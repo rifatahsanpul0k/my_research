@@ -3,15 +3,15 @@
     "S5N-adapt-modality": [
       {
         "dataset": "A1",
-        "borda": 13
+        "borda": 14
       },
       {
         "dataset": "D1",
-        "borda": 17
+        "borda": 18
       },
       {
         "dataset": "E11",
-        "borda": 26
+        "borda": 28
       },
       {
         "dataset": "E13",
@@ -26,140 +26,62 @@
         "borda": 13
       }
     ],
-    "S5N-SP-sage-nodis": [
-      {
-        "dataset": "A1",
-        "borda": 18
-      },
-      {
-        "dataset": "D1",
-        "borda": 18
-      },
-      {
-        "dataset": "E11",
-        "borda": 13
-      },
-      {
-        "dataset": "E13",
-        "borda": 20
-      },
-      {
-        "dataset": "E15",
-        "borda": 15
-      },
-      {
-        "dataset": "E18",
-        "borda": 21
-      }
-    ],
     "S5N-SP-sage-adapt": [
-      {
-        "dataset": "A1",
-        "borda": 18
-      },
-      {
-        "dataset": "D1",
-        "borda": 22
-      },
-      {
-        "dataset": "E11",
-        "borda": 25
-      },
-      {
-        "dataset": "E13",
-        "borda": 25
-      },
-      {
-        "dataset": "E15",
-        "borda": 15
-      },
-      {
-        "dataset": "E18",
-        "borda": 20
-      }
-    ],
-    "S5N-BASE": [
       {
         "dataset": "A1",
         "borda": 19
       },
       {
         "dataset": "D1",
-        "borda": 21
+        "borda": 23
       },
       {
         "dataset": "E11",
-        "borda": 30
+        "borda": 26
       },
       {
         "dataset": "E13",
-        "borda": 11
+        "borda": 26
       },
       {
         "dataset": "E15",
-        "borda": 16
+        "borda": 15
       },
       {
         "dataset": "E18",
+        "borda": 21
+      }
+    ],
+    "S5N-SP-sage-nodis": [
+      {
+        "dataset": "A1",
+        "borda": 20
+      },
+      {
+        "dataset": "D1",
+        "borda": 19
+      },
+      {
+        "dataset": "E11",
         "borda": 14
+      },
+      {
+        "dataset": "E13",
+        "borda": 21
+      },
+      {
+        "dataset": "E15",
+        "borda": 15
+      },
+      {
+        "dataset": "E18",
+        "borda": 22
       }
     ],
     "S5N-generalized": [
       {
         "dataset": "A1",
-        "borda": 19
-      },
-      {
-        "dataset": "D1",
-        "borda": 15
-      },
-      {
-        "dataset": "E11",
-        "borda": 7
-      },
-      {
-        "dataset": "E13",
-        "borda": 33
-      },
-      {
-        "dataset": "E15",
-        "borda": 34
-      },
-      {
-        "dataset": "E18",
         "borda": 20
-      }
-    ],
-    "S5N-dis04": [
-      {
-        "dataset": "A1",
-        "borda": 19
-      },
-      {
-        "dataset": "D1",
-        "borda": 19
-      },
-      {
-        "dataset": "E11",
-        "borda": 27
-      },
-      {
-        "dataset": "E13",
-        "borda": 23
-      },
-      {
-        "dataset": "E15",
-        "borda": 19
-      },
-      {
-        "dataset": "E18",
-        "borda": 30
-      }
-    ],
-    "S5N-shared-private": [
-      {
-        "dataset": "A1",
-        "borda": 19
       },
       {
         "dataset": "D1",
@@ -167,15 +89,119 @@
       },
       {
         "dataset": "E11",
-        "borda": 11
+        "borda": 8
       },
       {
         "dataset": "E13",
-        "borda": 19
+        "borda": 34
       },
       {
         "dataset": "E15",
+        "borda": 35
+      },
+      {
+        "dataset": "E18",
         "borda": 22
+      }
+    ],
+    "S5N-dis04": [
+      {
+        "dataset": "A1",
+        "borda": 20
+      },
+      {
+        "dataset": "D1",
+        "borda": 20
+      },
+      {
+        "dataset": "E11",
+        "borda": 28
+      },
+      {
+        "dataset": "E13",
+        "borda": 24
+      },
+      {
+        "dataset": "E15",
+        "borda": 19
+      },
+      {
+        "dataset": "E18",
+        "borda": 32
+      }
+    ],
+    "S5N-BASE": [
+      {
+        "dataset": "A1",
+        "borda": 21
+      },
+      {
+        "dataset": "D1",
+        "borda": 22
+      },
+      {
+        "dataset": "E11",
+        "borda": 32
+      },
+      {
+        "dataset": "E13",
+        "borda": 11
+      },
+      {
+        "dataset": "E15",
+        "borda": 16
+      },
+      {
+        "dataset": "E18",
+        "borda": 15
+      }
+    ],
+    "S5N-SP-sage": [
+      {
+        "dataset": "A1",
+        "borda": 21
+      },
+      {
+        "dataset": "D1",
+        "borda": 23
+      },
+      {
+        "dataset": "E11",
+        "borda": 23
+      },
+      {
+        "dataset": "E13",
+        "borda": 24
+      },
+      {
+        "dataset": "E15",
+        "borda": 17
+      },
+      {
+        "dataset": "E18",
+        "borda": 19
+      }
+    ],
+    "S5N-shared-private": [
+      {
+        "dataset": "A1",
+        "borda": 21
+      },
+      {
+        "dataset": "D1",
+        "borda": 17
+      },
+      {
+        "dataset": "E11",
+        "borda": 12
+      },
+      {
+        "dataset": "E13",
+        "borda": 21
+      },
+      {
+        "dataset": "E15",
+        "borda": 23
       },
       {
         "dataset": "E18",
@@ -185,15 +211,15 @@
     "S5N-adapt-spatial": [
       {
         "dataset": "A1",
-        "borda": 20
+        "borda": 22
       },
       {
         "dataset": "D1",
-        "borda": 21
+        "borda": 22
       },
       {
         "dataset": "E11",
-        "borda": 22
+        "borda": 24
       },
       {
         "dataset": "E13",
@@ -205,51 +231,77 @@
       },
       {
         "dataset": "E18",
-        "borda": 28
+        "borda": 30
       }
     ],
-    "S5N-SP-sage": [
+    "S6-ONE-v2": [
       {
         "dataset": "A1",
-        "borda": 20
+        "borda": 22
       },
       {
         "dataset": "D1",
-        "borda": 22
+        "borda": 28
       },
       {
         "dataset": "E11",
-        "borda": 22
+        "borda": 24
       },
       {
         "dataset": "E13",
-        "borda": 23
+        "borda": 28
       },
       {
         "dataset": "E15",
-        "borda": 17
+        "borda": 35
       },
       {
         "dataset": "E18",
+        "borda": 26
+      }
+    ],
+    "S5N-nograph": [
+      {
+        "dataset": "A1",
+        "borda": 23
+      },
+      {
+        "dataset": "D1",
+        "borda": 26
+      },
+      {
+        "dataset": "E11",
+        "borda": 15
+      },
+      {
+        "dataset": "E13",
+        "borda": 22
+      },
+      {
+        "dataset": "E15",
         "borda": 18
+      },
+      {
+        "dataset": "E18",
+        "borda": 13
       }
     ],
     "S5N-dis005": [
       {
         "dataset": "A1",
-        "borda": 22
+        "borda": 24
       },
       {
         "dataset": "D1",
-        "borda": 14
+        "borda": 15
       },
       {
         "dataset": "E11",
-        "borda": 21
+        "borda": 22
       },
       {
         "dataset": "E13",
-        "borda": 20
+        "borda": 21
       },
       {
         "dataset": "E15",
@@ -257,39 +309,13 @@
       },
       {
         "dataset": "E18",
-        "borda": 19
-      }
-    ],
-    "S5N-nograph": [
-      {
-        "dataset": "A1",
-        "borda": 22
-      },
-      {
-        "dataset": "D1",
-        "borda": 25
-      },
-      {
-        "dataset": "E11",
-        "borda": 14
-      },
-      {
-        "dataset": "E13",
-        "borda": 21
-      },
-      {
-        "dataset": "E15",
-        "borda": 17
-      },
-      {
-        "dataset": "E18",
-        "borda": 13
+        "borda": 20
       }
     ],
     "S6-ONE": [
       {
         "dataset": "A1",
-        "borda": 25
+        "borda": 26
       },
       {
         "dataset": "D1",
@@ -297,19 +323,19 @@
       },
       {
         "dataset": "E11",
-        "borda": 16
+        "borda": 17
       },
       {
         "dataset": "E13",
-        "borda": 21
+        "borda": 23
       },
       {
         "dataset": "E15",
-        "borda": 31
+        "borda": 32
       },
       {
         "dataset": "E18",
-        "borda": 25
+        "borda": 27
       }
     ]
   }
