@@ -1,1 +1,26 @@
-[]
+[
+ {
+  "combo": "S5N-BASE",
+  "dataset": "A1",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.2250807091787198,
+  "mean_sil": 0.1250315656264623
+ },
+ {
+  "combo": "S5N-BASE",
+  "dataset": "D1",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.20526046927669875,
+  "mean_sil": 0.18498297035694122
+ },
+ {
+  "combo": "S5N-BASE",
+  "dataset": "E11",
+  "transform": "standard",
+  "head": "spherical",
+  "mean_ari": 0.42907525642923666,
+  "mean_sil": 0.0931981901327769
+ }
+]
