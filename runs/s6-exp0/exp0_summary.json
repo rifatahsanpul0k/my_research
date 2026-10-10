@@ -142,5 +142,485 @@
   "head": "kmeans",
   "mean_ari": 0.3168788246706277,
   "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-SP-sage-nodis",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "gmm",
+  "mean_ari": 0.2236293080595612,
+  "mean_sil": 0.1277814283967018
+ },
+ {
+  "combo": "S5N-SP-sage-nodis",
+  "dataset": "D1",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.21083962544168564,
+  "mean_sil": 0.1878548413515091
+ },
+ {
+  "combo": "S5N-SP-sage-nodis",
+  "dataset": "E11",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.44539883144874254,
+  "mean_sil": 0.04310619582732519
+ },
+ {
+  "combo": "S5N-SP-sage-nodis",
+  "dataset": "E13",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.41858569931436196,
+  "mean_sil": 0.21485093235969543
+ },
+ {
+  "combo": "S5N-SP-sage-nodis",
+  "dataset": "E15",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.49529960890708985,
+  "mean_sil": 0.17447078227996826
+ },
+ {
+  "combo": "S5N-SP-sage-nodis",
+  "dataset": "E18",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.307532498435084,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-adapt-modality",
+  "dataset": "A1",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.24990190659854195,
+  "mean_sil": 0.1612695058186849
+ },
+ {
+  "combo": "S5N-adapt-modality",
+  "dataset": "D1",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.2152997193600429,
+  "mean_sil": 0.14966283241907755
+ },
+ {
+  "combo": "S5N-adapt-modality",
+  "dataset": "E11",
+  "transform": "standard",
+  "head": "spherical",
+  "mean_ari": 0.41192988683095694,
+  "mean_sil": 0.18338622649510702
+ },
+ {
+  "combo": "S5N-adapt-modality",
+  "dataset": "E13",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.40752490343208186,
+  "mean_sil": 0.34451310833295185
+ },
+ {
+  "combo": "S5N-adapt-modality",
+  "dataset": "E15",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.4918211622670486,
+  "mean_sil": 0.3545568784077962
+ },
+ {
+  "combo": "S5N-adapt-modality",
+  "dataset": "E18",
+  "transform": "pca24",
+  "head": "gmm",
+  "mean_ari": 0.2886168465901691,
+  "mean_sil": 0.15410479406515756
+ },
+ {
+  "combo": "S5N-adapt-spatial",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "gmm",
+  "mean_ari": 0.24433608292830375,
+  "mean_sil": 0.12489491701126099
+ },
+ {
+  "combo": "S5N-adapt-spatial",
+  "dataset": "D1",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.2151419615000192,
+  "mean_sil": 0.14853593210379282
+ },
+ {
+  "combo": "S5N-adapt-spatial",
+  "dataset": "E11",
+  "transform": "standard",
+  "head": "spherical",
+  "mean_ari": 0.42294923892166764,
+  "mean_sil": 0.03138309810310602
+ },
+ {
+  "combo": "S5N-adapt-spatial",
+  "dataset": "E13",
+  "transform": "standard",
+  "head": "gmm",
+  "mean_ari": 0.3741020158816917,
+  "mean_sil": 0.2011091262102127
+ },
+ {
+  "combo": "S5N-adapt-spatial",
+  "dataset": "E15",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.5056381498887976,
+  "mean_sil": 0.3469313383102417
+ },
+ {
+  "combo": "S5N-adapt-spatial",
+  "dataset": "E18",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.25987236885166526,
+  "mean_sil": 0.23977333307266235
+ },
+ {
+  "combo": "S5N-dis005",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "gmm",
+  "mean_ari": 0.22252589219322183,
+  "mean_sil": 0.10955264170964558
+ },
+ {
+  "combo": "S5N-dis005",
+  "dataset": "D1",
+  "transform": "pca24",
+  "head": "gmm",
+  "mean_ari": 0.21397408026775241,
+  "mean_sil": 0.11866773913304011
+ },
+ {
+  "combo": "S5N-dis005",
+  "dataset": "E11",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.4379983380540933,
+  "mean_sil": 0.04334636280934016
+ },
+ {
+  "combo": "S5N-dis005",
+  "dataset": "E13",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.4360661844798021,
+  "mean_sil": 0.27340517441431683
+ },
+ {
+  "combo": "S5N-dis005",
+  "dataset": "E15",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.4952333994135556,
+  "mean_sil": 0.33570409814516705
+ },
+ {
+  "combo": "S5N-dis005",
+  "dataset": "E18",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.32280503533981886,
+  "mean_sil": 0.23943760494391123
+ },
+ {
+  "combo": "S5N-dis04",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "gmm",
+  "mean_ari": 0.23681072413116513,
+  "mean_sil": 0.13001680125792822
+ },
+ {
+  "combo": "S5N-dis04",
+  "dataset": "D1",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.24876201820734675,
+  "mean_sil": 0.1509548226992289
+ },
+ {
+  "combo": "S5N-dis04",
+  "dataset": "E11",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.4112021726282901,
+  "mean_sil": 0.03782300713161627
+ },
+ {
+  "combo": "S5N-dis04",
+  "dataset": "E13",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.42846007897366833,
+  "mean_sil": 0.2610809653997421
+ },
+ {
+  "combo": "S5N-dis04",
+  "dataset": "E15",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.47997411037941035,
+  "mean_sil": 0.30603520075480145
+ },
+ {
+  "combo": "S5N-dis04",
+  "dataset": "E18",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.32044517169253733,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-generalized",
+  "dataset": "A1",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.22848781933822662,
+  "mean_sil": 0.1387351950009664
+ },
+ {
+  "combo": "S5N-generalized",
+  "dataset": "D1",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.2415187351186722,
+  "mean_sil": 0.1918258766333262
+ },
+ {
+  "combo": "S5N-generalized",
+  "dataset": "E11",
+  "transform": "l2",
+  "head": "gmm",
+  "mean_ari": 0.26936745346376695,
+  "mean_sil": 0.07795186961690585
+ },
+ {
+  "combo": "S5N-generalized",
+  "dataset": "E13",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.30488898081084165,
+  "mean_sil": 0.13606326778729758
+ },
+ {
+  "combo": "S5N-generalized",
+  "dataset": "E15",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.43533509423892247,
+  "mean_sil": 0.2529534101486206
+ },
+ {
+  "combo": "S5N-generalized",
+  "dataset": "E18",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.1838607875089319,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-nograph",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "gmm",
+  "mean_ari": 0.23861069417060268,
+  "mean_sil": 0.06101768339673678
+ },
+ {
+  "combo": "S5N-nograph",
+  "dataset": "D1",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.24993753048478376,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-nograph",
+  "dataset": "E11",
+  "transform": "l2",
+  "head": "gmm",
+  "mean_ari": 0.24972916544657817,
+  "mean_sil": 0.029128552104036014
+ },
+ {
+  "combo": "S5N-nograph",
+  "dataset": "E13",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.3326454202024145,
+  "mean_sil": 0.17558213571707407
+ },
+ {
+  "combo": "S5N-nograph",
+  "dataset": "E15",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.3441142276817317,
+  "mean_sil": 0.04440177232027054
+ },
+ {
+  "combo": "S5N-nograph",
+  "dataset": "E18",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.1861925583289963,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-shared-private",
+  "dataset": "A1",
+  "transform": "pca24",
+  "head": "gmm",
+  "mean_ari": 0.23586499604622457,
+  "mean_sil": 0.11167626827955246
+ },
+ {
+  "combo": "S5N-shared-private",
+  "dataset": "D1",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.23203207138893864,
+  "mean_sil": 0.15387718379497528
+ },
+ {
+  "combo": "S5N-shared-private",
+  "dataset": "E11",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.28496311262756047,
+  "mean_sil": -0.05245263377825419
+ },
+ {
+  "combo": "S5N-shared-private",
+  "dataset": "E13",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.3346631835427439,
+  "mean_sil": 0.2173955092827479
+ },
+ {
+  "combo": "S5N-shared-private",
+  "dataset": "E15",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.38717106702251575,
+  "mean_sil": 0.2619582762320836
+ },
+ {
+  "combo": "S5N-shared-private",
+  "dataset": "E18",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.1994795419830859,
+  "mean_sil": 0.2201626499493917
+ },
+ {
+  "combo": "S6-ONE",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "gmm",
+  "mean_ari": 0.2304645752135367,
+  "mean_sil": 0.0686464508374532
+ },
+ {
+  "combo": "S6-ONE",
+  "dataset": "D1",
+  "transform": "raw",
+  "head": "kmeans",
+  "mean_ari": 0.21586121747304265,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S6-ONE",
+  "dataset": "E11",
+  "transform": "l2",
+  "head": "gmm",
+  "mean_ari": 0.25372913551048765,
+  "mean_sil": 0.03987490075329939
+ },
+ {
+  "combo": "S6-ONE",
+  "dataset": "E13",
+  "transform": "l2",
+  "head": "gmm",
+  "mean_ari": 0.23819625875420747,
+  "mean_sil": 0.05474538107713064
+ },
+ {
+  "combo": "S6-ONE",
+  "dataset": "E15",
+  "transform": "standard",
+  "head": "spherical",
+  "mean_ari": 0.32544287391328003,
+  "mean_sil": 0.03621918335556984
+ },
+ {
+  "combo": "S6-ONE",
+  "dataset": "E18",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.1762255788536451,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S6-ONE-v2",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.21285741359666135,
+  "mean_sil": 0.10210451732079188
+ },
+ {
+  "combo": "S6-ONE-v2",
+  "dataset": "D1",
+  "transform": "pca24",
+  "head": "kmeans",
+  "mean_ari": 0.22299719673056892,
+  "mean_sil": NaN
+ },
+ {
+  "combo": "S6-ONE-v2",
+  "dataset": "E11",
+  "transform": "l2",
+  "head": "gmm",
+  "mean_ari": 0.2567806754883227,
+  "mean_sil": 0.04655176090697447
+ },
+ {
+  "combo": "S6-ONE-v2",
+  "dataset": "E13",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.32288092063830015,
+  "mean_sil": 0.14128199716409048
+ },
+ {
+  "combo": "S6-ONE-v2",
+  "dataset": "E15",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.2899013238053893,
+  "mean_sil": 0.236776202917099
+ },
+ {
+  "combo": "S6-ONE-v2",
+  "dataset": "E18",
+  "transform": "raw",
+  "head": "gmm",
+  "mean_ari": 0.15754764005663086,
+  "mean_sil": NaN
  }
 ]
