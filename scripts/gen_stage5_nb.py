@@ -489,6 +489,55 @@ class SAGELayer(nn.Module):
         agg = torch.sparse.mm(g["adj_nl"], x)
         return self.lin(torch.cat([x, agg], 1)).relu()
 
+class S6OneV2Model(nn.Module):
+    # ONE MODEL v2: fixes v1's backwards gates.
+    # v1's gate learned from reconstruction (graph helps recon even when it hurts
+    # clustering). v2: (1) gate bias init to -1.0 (starts skeptical of graph, must
+    # LEARN to use it); (2) Laplacian loss weight = mean gate value, so the gate
+    # controls both path blending AND smoothing strength — one coherent mechanism.
+    def __init__(self, d_rna, d_aux, cfg, d_recon_rna):
+        super().__init__()
+        self.cfg = cfg
+        self.sage_r = SAGELayer(d_rna, 32)
+        self.mlp_r = nn.Sequential(nn.Linear(d_rna, 32), nn.ReLU())
+        self.sage_a = SAGELayer(d_aux, 32)
+        self.mlp_a = nn.Sequential(nn.Linear(d_aux, 32), nn.ReLU())
+        self.gate_r = nn.Linear(32, 1); self.gate_a = nn.Linear(32, 1)
+        nn.init.constant_(self.gate_r.bias, -1.0)   # start at α≈0.27: prove the graph helps
+        nn.init.constant_(self.gate_a.bias, -1.0)
+        self.lin_s = nn.Linear(64, 16)
+        self.lin_pr = nn.Linear(32, 8)
+        self.lin_pa = nn.Linear(32, 8)
+        self.dec_r = nn.Linear(32, d_recon_rna)
+        self.dec_a = nn.Linear(32, d_aux)
+
+    def forward(self, xr, xa, g):
+        hr_g = self.sage_r(xr, g); hr_f = self.mlp_r(xr)
+        ha_g = self.sage_a(xa, g); ha_f = self.mlp_a(xa)
+        ar = torch.sigmoid(self.gate_r(hr_g))
+        aa = torch.sigmoid(self.gate_a(ha_g))
+        hr = ar * hr_g + (1 - ar) * hr_f
+        ha = aa * ha_g + (1 - aa) * ha_f
+        zs = self.lin_s(torch.cat([hr, ha], dim=1))
+        zpr = self.lin_pr(hr); zpa = self.lin_pa(ha)
+        z = torch.cat([zs, zpr, zpa], dim=1)
+        return z, zs, zpr, zpa, ar, aa
+
+    def loss(self, out, tr, ta, g, lam_spa, lam_dis):
+        z, zs, zpr, zpa, ar, aa = out
+        lr = F.mse_loss(self.dec_r(z), tr); la = F.mse_loss(self.dec_a(z), ta)
+        L = lr + la
+        def cos2(a, b):
+            c = (a * b).sum(1) / (a.norm(dim=1) * b.norm(dim=1) + 1e-8)
+            return (c ** 2).mean()
+        zpriv = torch.cat([zpr, zpa], dim=1)
+        L = L + lam_dis * cos2(zs, zpriv)
+        # Gate-coupled Laplacian: the gate's own mean scales the smoothing loss.
+        # Gate→0 (ignore graph) ⇒ smoothing shuts off automatically. One mechanism.
+        gate_mean = (ar.mean() + aa.mean()) / 2
+        L = L + gate_mean * lam_spa * laplacian_loss(z, g["edge_index"])
+        return L
+
 class S6OneModel(nn.Module):
     # THE ONE MODEL: Gated Dual-Path Shared-Private.
     # Per modality: SAGE graph path + MLP feature path, blended by a LEARNED per-spot
@@ -602,6 +651,7 @@ COMBINATIONS = [
     ("S5N-dis04",           dict(model="shared_private_sage", lam_dis=0.4)),
     ("S5N-nograph",         dict(model="shared_private_sage", spatial="none")),
     ("S6-ONE",              dict(model="one_model", lam_dis=0.15)),
+    ("S6-ONE-v2",           dict(model="one_model_v2", lam_dis=0.15)),
 ]
 print(f"{len(COMBINATIONS)} combinations registered")
 '''))
@@ -632,7 +682,8 @@ def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
     lam_dis = resolve_lam_dis(cfg, data)   # fixed or cross-modal-agreement adaptive
     ModelCls = {"shared_private": S5SPModel,
                 "shared_private_sage": S5SPSageModel,
-                "one_model": S6OneModel}.get(cfg.get("model"), S3Model)
+                "one_model": S6OneModel,
+                "one_model_v2": S6OneV2Model}.get(cfg.get("model"), S3Model)
     model = ModelCls(data["Xr"].shape[1], data["Xa"].shape[1], cfg, d_rr).to(DEVICE)
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     mu = None
@@ -658,7 +709,7 @@ def train_embed(cfg, data, g, seed, epochs=120, lr=1e-3, kl_head=False):
         z = out[0]
         r2r = float(r2_score(model.dec_r(z), tr)); r2a = float(r2_score(model.dec_a(z), ta))
         gate = None
-        if cfg.get("model") == "one_model" and len(out) >= 6:
+        if cfg.get("model") in ("one_model", "one_model_v2") and len(out) >= 6:
             gate = {"rna": float(out[4].mean()), "aux": float(out[5].mean())}
     return z.detach().cpu().numpy(), r2r, r2a, (mu.detach() if mu is not None else None), lam_spa, gate
 
