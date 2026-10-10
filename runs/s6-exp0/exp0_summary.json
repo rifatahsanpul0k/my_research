@@ -46,5 +46,29 @@
   "head": "gmm",
   "mean_ari": 0.3091705160621996,
   "mean_sil": NaN
+ },
+ {
+  "combo": "S5N-SP-sage",
+  "dataset": "A1",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.2255255308822454,
+  "mean_sil": 0.1766264388958613
+ },
+ {
+  "combo": "S5N-SP-sage",
+  "dataset": "D1",
+  "transform": "standard",
+  "head": "kmeans",
+  "mean_ari": 0.24610983122317487,
+  "mean_sil": 0.1489934722582499
+ },
+ {
+  "combo": "S5N-SP-sage",
+  "dataset": "E11",
+  "transform": "pca24",
+  "head": "spherical",
+  "mean_ari": 0.4312690292908495,
+  "mean_sil": 0.052771699925263725
  }
 ]
