@@ -43,7 +43,7 @@ Fixed smoothing over-smooths lymph node; fixed fusion lets RNA dominate ADT.
 `S5N-adapt-spatial`; `S5N-adapt-modality`; `S5N-shared-private`;
 `S5N-generalized` (all three mechanisms combined).
 
-**RAUS v2 selection** (Borda over silhouette, seed-stability, reconstruction-balance)
+**RAUS v3b selection** (Borda over seed-stability, reconstruction-balance, R2_rna; silhouette excluded)
 + over-clustering guard; post-hoc ARI quarantined to `posthoc.json` (reporting only).
 Note (Stage-3 recal finding): silhouette can mislead under over-smoothing — the
 RAUS-v3 criterion study (agent Stage 4) addresses selection; here we maximize the
@@ -781,7 +781,7 @@ for combo_name, override in COMBINATIONS:
 print("stage-5 runs complete")
 '''))
 
-cells.append(code('''# ---------- aggregation + summary (RAUS v2, guard, quarantined post-hoc) ----------
+cells.append(code('''# ---------- aggregation + summary (RAUS v3b, guard, quarantined post-hoc) ----------
 from collections import defaultdict
 
 def seed_stability(labs):
@@ -792,11 +792,11 @@ def seed_stability(labs):
             vals.append(adjusted_rand_score(labs[ss[i]], labs[ss[j]]))
     return float(np.mean(vals))
 
-per_ds = defaultdict(list)   # ds -> list of (combo, sil, stab, recbal, postari)
+per_ds = defaultdict(list)   # ds -> list of (combo, sil, stab, recbal, postari, r2r)
 combos = [c for c, _ in COMBINATIONS]
 for combo in combos:
     for ds_id in DATASETS:
-        sils, stab_labs, recbals, paris = [], {}, [], []
+        sils, stab_labs, recbals, paris, r2rs = [], {}, [], [], []
         ok = True
         for seed in SEEDS:
             d = os.path.join(OUT, combo, ds_id, f"seed{seed}")
@@ -805,17 +805,19 @@ for combo in combos:
                 ok = False; break
             m = json.load(open(mp)); p = json.load(open(pp))
             sils.append(m["silhouette"]); recbals.append(m["reconstruction_balance"])
+            r2rs.append(m["r2_rna"])
             paris.append(p["ari"]); stab_labs[seed] = np.load(os.path.join(d, "labels.npy"))
         if not ok:
             continue
         per_ds[ds_id].append((combo, float(np.mean(sils)), seed_stability(stab_labs),
-                              float(np.mean(recbals)), float(np.mean(paris))))
+                              float(np.mean(recbals)), float(np.mean(paris)), float(np.mean(r2rs))))
 
 def borda_rank(rows):
-    # rows: list of (combo, sil, stab, recbal, postari); lower borda = better
+    # RAUS v3b: Borda{seed-stability, reconstruction-balance, R^2_rna}; lower = better.
+    # Silhouette EXCLUDED (proven misleading: high sil often = collapse, ~0 ARI).
     pts = {}
-    for m, rev in [(1, True), (2, True), (3, True)]:
-        srt = sorted(rows, key=lambda r: r[m], reverse=rev)
+    for m in [2, 3, 5]:  # stab, recbal, r2_rna — all higher-better
+        srt = sorted(rows, key=lambda r: r[m], reverse=True)
         for i, r in enumerate(srt):
             pts[r[0]] = pts.get(r[0], 0) + i + 1
     return pts
@@ -825,16 +827,16 @@ for ds_id in sorted(per_ds):
     rows = per_ds[ds_id]
     pts = borda_rank(rows)
     by = {r[0]: r for r in rows}
-    print(f"\\n=== {ds_id} (RAUS v2 Borda; lower better) ===")
+    print(f"\\n=== {ds_id} (RAUS v3b Borda; lower better) ===")
     for combo in sorted(pts, key=pts.get):
-        _, sil, stab, recbal, pari = by[combo]
+        _, sil, stab, recbal, pari, r2r = by[combo]
         rs = sorted(rows, key=lambda r: r[1], reverse=True)
         rt = sorted(rows, key=lambda r: r[2], reverse=True)
         r_sil = [r[0] for r in rs].index(combo) + 1
         r_stab = [r[0] for r in rt].index(combo) + 1
         flag = " FLAG" if abs(r_sil - r_stab) >= 4 else ""
         print(f"#{list(sorted(pts, key=pts.get)).index(combo)+1:<3} {combo:24} borda={pts[combo]:3d} "
-              f"sil={sil:.3f}[{r_sil}] stab={stab:.3f}[{r_stab}] recbal={recbal:.3f} postARI={pari:.3f}{flag}")
+              f"sil={sil:.3f}[{r_sil}] stab={stab:.3f}[{r_stab}] recbal={recbal:.3f} r2r={r2r:.3f} postARI={pari:.3f}{flag}")
         cross[combo].append((ds_id, pts[combo]))
 
 print("\\n=== cross-dataset (avg Borda rank; lower better) ===")
