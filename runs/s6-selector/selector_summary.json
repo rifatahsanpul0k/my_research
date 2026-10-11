@@ -1,6 +1,6 @@
 {
-  "stability_correct": 0,
-  "silhouette_correct": 0,
-  "total": 0,
+  "stability_correct": 2,
+  "silhouette_correct": 3,
+  "total": 6,
   "encoder": "S5N-dis005"
 }
