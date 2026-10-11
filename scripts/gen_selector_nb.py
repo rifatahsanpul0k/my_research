@@ -125,66 +125,48 @@ def git_push(msg):
         print("push failed:", msg_e[:300])
 '''))
 
-cells.append(code('''# ---------- Data loading (same as Exp0) ----------
+cells.append(code('''# ---------- Data loading (same MARKER pattern as Exp0) ----------
 MARKER = "10x_human_lymph_node_A1"
 def find_data_root():
-    for p in ["/kaggle/input/spatial-multiomics-6datasets-private",
-              "/kaggle/input"]:
-        if os.path.isdir(p):
-            # check for marker
-            for root, dirs, files in os.walk(p):
-                if MARKER in dirs or MARKER in root:
-                    return p
-            # fallback: check if any dataset-like dirs exist
-            return p
-    # try downloading
-    print("dataset not found, attempting download...")
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "kaggle"], check=True)
-    os.makedirs("/kaggle/input/dl", exist_ok=True)
-    subprocess.run(["kaggle", "datasets", "download", "-d",
-                    "pulokpulok/spatial-multiomics-6datasets-private",
-                    "-p", "/kaggle/input/dl", "--unzip"], check=True)
-    return "/kaggle/input/dl"
+    for base in ["/kaggle/input/spatial-multiomics-6datasets-private",
+                 "/kaggle/working/spatial-multiomics-6datasets-private",
+                 "/kaggle/working"]:
+        if os.path.isdir(os.path.join(base, MARKER)):
+            return base
+    return None
 
 DATA_ROOT = find_data_root()
+if DATA_ROOT is None:
+    # download fallback (same as stage5/exp0)
+    print("dataset not found, attempting download...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "kaggle"], check=True)
+    subprocess.run(["kaggle", "datasets", "download", "-d",
+                    "pulokpulok/spatial-multiomics-6datasets-private",
+                    "-p", "/kaggle/working", "--unzip"], check=True)
+    DATA_ROOT = find_data_root()
 print("DATA_ROOT:", DATA_ROOT)
 
-# DATASETS spec: (name, folder, annotation_file, label_column, k)
-DATASETS = [
-    ("A1",  "10x_human_lymph_node_A1",  "annotation.csv", "manual-anno", 10),
-    ("D1",  "10x_human_lymph_node_D1",  "annotation.csv", "manual-anno", 11),
-    ("E11", "E11",  "annotation.csv", "cell_type", 8),
-    ("E13", "E13",  "annotation.csv", "cell_type", 12),
-    ("E15", "E15",  "annotation.csv", "cell_type", 12),
-    ("E18", "E18",  "annotation.csv", "cell_type", 14),
-]
+# GT spec — EXACT copy from Exp0 (direct path joins, no guessing)
+GT_SPEC = {
+    "A1":  dict(folder="10x_human_lymph_node_A1", gt_file="annotation.csv", gt_col="manual-anno"),
+    "D1":  dict(folder="10x_human_lymph_node_D1", gt_file="annotation.csv", gt_col="manual-anno"),
+    "E11": dict(folder="Mouse_Brain_E11_S1", gt_file="anno.csv", gt_col="cluster"),
+    "E13": dict(folder="Mouse_Brain_E13_S1", gt_file="anno.csv", gt_col="cluster"),
+    "E15": dict(folder="Mouse_Brain_E15_S1", gt_file="anno.csv", gt_col="cluster"),
+    "E18": dict(folder="Mouse_Brain_E18_S1", gt_file="anno.csv", gt_col="cluster"),
+}
+GT = {}
+for ds, spec in GT_SPEC.items():
+    p = os.path.join(DATA_ROOT, spec["folder"], spec["gt_file"])
+    assert os.path.exists(p), f"missing {p}"
+    df = pd.read_csv(p, index_col=0)
+    GT[ds] = df[spec["gt_col"]].astype(str).values
+    print(ds, "gt:", GT[ds].shape, "classes:", len(np.unique(GT[ds])))
 
-def load_gt(ds_name):
-    """Load ground truth labels. QUARANTINED — reporting only, never for selection."""
-    for name, folder, ann_file, label_col, k in DATASETS:
-        if name == ds_name:
-            # search for annotation file
-            for root, dirs, files in os.walk(DATA_ROOT):
-                if folder in root and ann_file in files:
-                    df = pd.read_csv(os.path.join(root, ann_file))
-                    # find label column (try exact, then fuzzy)
-                    col = label_col if label_col in df.columns else df.columns[0]
-                    return df[col].values, k
-            # fallback: search by marker
-            for root, dirs, files in os.walk(DATA_ROOT):
-                if ann_file in files and folder in root:
-                    df = pd.read_csv(os.path.join(root, ann_file))
-                    col = label_col if label_col in df.columns else df.columns[0]
-                    return df[col].values, k
-    raise FileNotFoundError(f"GT not found for {ds_name}")
-
-# Test GT loading
-for ds_name, _, _, _, k in DATASETS:
-    try:
-        gt, kk = load_gt(ds_name)
-        print(f"{ds_name}: {len(gt)} spots, k={kk}")
-    except Exception as e:
-        print(f"{ds_name}: FAILED - {e}")
+# declared k (same exception as stage5: applied identically, disclosed)
+DECLARED_K = {"A1": 10, "D1": 11, "E11": 8, "E13": 12, "E15": 12, "E18": 14}
+# DATASETS for iteration
+DATASETS = list(DECLARED_K.keys())
 '''))
 
 cells.append(code('''# ---------- GPU clustering (same as Exp0) ----------
@@ -290,18 +272,15 @@ if os.path.exists(summary_path):
 
 fout = open(summary_path, "a")
 
-for ds_name, _, _, _, k in DATASETS:
+for ds_name in DATASETS:
+    k = DECLARED_K[ds_name]
     ds_dir = os.path.join(S5, ds_name)
     if not os.path.isdir(ds_dir):
         print(f"  SKIP {ds_name}: no dir")
         continue
 
-    # Load GT (quarantined — reporting only)
-    try:
-        gt, _ = load_gt(ds_name)
-    except Exception as e:
-        print(f"  SKIP {ds_name}: GT failed - {e}")
-        continue
+    # GT pre-loaded above (quarantined — reporting only)
+    gt = GT[ds_name]
 
     for transform in TRANSFORMS:
         for head in HEADS:
@@ -365,7 +344,8 @@ correct_stab = 0
 correct_sil = 0
 total = 0
 
-for ds_name, _, _, _, k in DATASETS:
+for ds_name in DATASETS:
+    k = DECLARED_K[ds_name]
     cands = []
     for t in TRANSFORMS:
         for h in HEADS:
