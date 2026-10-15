@@ -1,0 +1,38 @@
+{
+  "A1": {
+    "baseline_ari": 0.2561411835948751,
+    "baseline_cfg": "pca32/res=0.8 (n_clust=6)",
+    "neural_ari": 0.25,
+    "gap": -0.006141183594875088
+  },
+  "D1": {
+    "baseline_ari": 0.2696573510977208,
+    "baseline_cfg": "pca32/res=0.8 (n_clust=6)",
+    "neural_ari": 0.25,
+    "gap": -0.01965735109772082
+  },
+  "E11": {
+    "baseline_ari": 0.22115201494680586,
+    "baseline_cfg": "pca32/res=0.5 (n_clust=2)",
+    "neural_ari": 0.445,
+    "gap": 0.22384798505319414
+  },
+  "E13": {
+    "baseline_ari": 0.45112398456773467,
+    "baseline_cfg": "pca32/res=0.8 (n_clust=4)",
+    "neural_ari": 0.436,
+    "gap": -0.015123984567734672
+  },
+  "E15": {
+    "baseline_ari": 0.4323816490054381,
+    "baseline_cfg": "pca32/res=1.0 (n_clust=8)",
+    "neural_ari": 0.506,
+    "gap": 0.07361835099456193
+  },
+  "E18": {
+    "baseline_ari": 0.20723222029210525,
+    "baseline_cfg": "pca32/res=0.5 (n_clust=4)",
+    "neural_ari": 0.323,
+    "gap": 0.11576777970789476
+  }
+}
