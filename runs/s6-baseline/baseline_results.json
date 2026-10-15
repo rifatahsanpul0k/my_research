@@ -1,38 +1,98 @@
 {
   "A1": {
-    "baseline_ari": 0.2561411835948751,
-    "baseline_cfg": "pca32/res=0.8 (n_clust=6)",
+    "k": 10,
+    "baseline_ari": 0.1780389996964375,
+    "pca32": {
+      "ari": 0.1780389996964375,
+      "resolution": 1.0,
+      "n_clusters": 9
+    },
+    "concat": {
+      "ari": 0.127498425925657,
+      "resolution": 1.0,
+      "n_clusters": 9
+    },
     "neural_ari": 0.25,
-    "gap": -0.006141183594875088
+    "gap": 0.0719610003035625
   },
   "D1": {
-    "baseline_ari": 0.2696573510977208,
-    "baseline_cfg": "pca32/res=0.8 (n_clust=6)",
+    "k": 11,
+    "baseline_ari": 0.15760598164117898,
+    "pca32": {
+      "ari": 0.15760598164117898,
+      "resolution": 1.0,
+      "n_clusters": 10
+    },
+    "concat": {
+      "ari": 0.08267520909768218,
+      "resolution": 1.0,
+      "n_clusters": 10
+    },
     "neural_ari": 0.25,
-    "gap": -0.01965735109772082
+    "gap": 0.09239401835882102
   },
   "E11": {
-    "baseline_ari": 0.22115201494680586,
-    "baseline_cfg": "pca32/res=0.5 (n_clust=2)",
+    "k": 8,
+    "baseline_ari": 0.21452883077075832,
+    "pca32": {
+      "ari": 0.21452883077075832,
+      "resolution": 0.8,
+      "n_clusters": 5
+    },
+    "concat": {
+      "ari": 0.08973901807627588,
+      "resolution": 1.0,
+      "n_clusters": 10
+    },
     "neural_ari": 0.445,
-    "gap": 0.22384798505319414
+    "gap": 0.23047116922924168
   },
   "E13": {
-    "baseline_ari": 0.45112398456773467,
-    "baseline_cfg": "pca32/res=0.8 (n_clust=4)",
+    "k": 12,
+    "baseline_ari": 0.23951563549033583,
+    "pca32": {
+      "ari": 0.23951563549033583,
+      "resolution": 1.2,
+      "n_clusters": 12
+    },
+    "concat": {
+      "ari": 0.12519221728588478,
+      "resolution": 1.2,
+      "n_clusters": 13
+    },
     "neural_ari": 0.436,
-    "gap": -0.015123984567734672
+    "gap": 0.19648436450966417
   },
   "E15": {
-    "baseline_ari": 0.4323816490054381,
-    "baseline_cfg": "pca32/res=1.0 (n_clust=8)",
+    "k": 12,
+    "baseline_ari": 0.3387677623593284,
+    "pca32": {
+      "ari": 0.3387677623593284,
+      "resolution": 1.2,
+      "n_clusters": 11
+    },
+    "concat": {
+      "ari": 0.2319287817056558,
+      "resolution": 1.2,
+      "n_clusters": 13
+    },
     "neural_ari": 0.506,
-    "gap": 0.07361835099456193
+    "gap": 0.16723223764067163
   },
   "E18": {
-    "baseline_ari": 0.20723222029210525,
-    "baseline_cfg": "pca32/res=0.5 (n_clust=4)",
+    "k": 14,
+    "baseline_ari": 0.10646157941503119,
+    "pca32": {
+      "ari": 0.10646157941503119,
+      "resolution": 1.2,
+      "n_clusters": 14
+    },
+    "concat": {
+      "ari": 0.09609686236118838,
+      "resolution": 1.0,
+      "n_clusters": 12
+    },
     "neural_ari": 0.323,
-    "gap": 0.11576777970789476
+    "gap": 0.2165384205849688
   }
 }
