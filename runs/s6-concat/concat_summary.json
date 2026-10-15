@@ -1,0 +1,44 @@
+{
+  "A1": {
+    "best_concat_ari": 0.24003952578934443,
+    "best_concat_cfg": "naive_concat_pca32/gmm",
+    "neural_ari": 0.25,
+    "gap": 0.009960474210655573,
+    "verdict": "TIE"
+  },
+  "D1": {
+    "best_concat_ari": 0.24300062149508542,
+    "best_concat_cfg": "aux_only/kmeans",
+    "neural_ari": 0.25,
+    "gap": 0.006999378504914583,
+    "verdict": "TIE"
+  },
+  "E11": {
+    "best_concat_ari": 0.28588261062856124,
+    "best_concat_cfg": "naive_concat/spherical",
+    "neural_ari": 0.445,
+    "gap": 0.15911738937143877,
+    "verdict": "NEURAL WINS"
+  },
+  "E13": {
+    "best_concat_ari": 0.4003330964305083,
+    "best_concat_cfg": "naive_concat_pca32/kmeans",
+    "neural_ari": 0.436,
+    "gap": 0.035666903569491704,
+    "verdict": "NEURAL WINS"
+  },
+  "E15": {
+    "best_concat_ari": 0.42567104796450855,
+    "best_concat_cfg": "naive_concat/kmeans",
+    "neural_ari": 0.506,
+    "gap": 0.08032895203549145,
+    "verdict": "NEURAL WINS"
+  },
+  "E18": {
+    "best_concat_ari": 0.224815981356147,
+    "best_concat_cfg": "naive_concat/kmeans",
+    "neural_ari": 0.323,
+    "gap": 0.09818401864385301,
+    "verdict": "NEURAL WINS"
+  }
+}
