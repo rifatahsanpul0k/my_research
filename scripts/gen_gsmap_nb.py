@@ -203,12 +203,32 @@ def run(cmd, **kw):
         raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
     return r
 
+def fetch(url, dest, tries=4):
+    # NOTE: plain `wget -q` silently left a truncated archive in the first run
+    # (wget exit 0, then tar exit 2). curl -C - resumes partial downloads, and
+    # `gzip -t` proves the archive is complete BEFORE tar ever touches it.
+    for a in range(1, tries + 1):
+        subprocess.run(["curl", "-L", "-C", "-", "--retry", "3", "-o", dest, url])
+        if os.path.exists(dest):
+            ok = subprocess.run(["gzip", "-t", dest]).returncode == 0
+            print(f"  attempt {a}: {os.path.getsize(dest)/1e9:.2f} GB, "
+                  f"gzip integrity {'OK' if ok else 'BAD'}", flush=True)
+            if ok:
+                return
+            if a == tries - 1:
+                print("  restarting download from scratch")
+                os.remove(dest)
+    raise RuntimeError("download incomplete after retries: " + url)
+
 os.chdir(GSMAP_DIR)
+print(subprocess.run(["df", "-h", GSMAP_DIR], capture_output=True, text=True).stdout)
 if not os.path.isdir("gsMap_resource"):
-    run(["wget", "-q", "https://yanglab.westlake.edu.cn/data/gsMap/gsMap_resource.tar.gz"])
+    fetch("https://yanglab.westlake.edu.cn/data/gsMap/gsMap_resource.tar.gz",
+          "gsMap_resource.tar.gz")
     run(["tar", "-xzf", "gsMap_resource.tar.gz"])
 if not os.path.isdir("gsMap_example_data"):
-    run(["wget", "-q", "https://yanglab.westlake.edu.cn/data/gsMap/gsMap_example_data.tar.gz"])
+    fetch("https://yanglab.westlake.edu.cn/data/gsMap/gsMap_example_data.tar.gz",
+          "gsMap_example_data.tar.gz")
     run(["tar", "-xzf", "gsMap_example_data.tar.gz"])
 
 RES = os.path.join(GSMAP_DIR, "gsMap_resource")
