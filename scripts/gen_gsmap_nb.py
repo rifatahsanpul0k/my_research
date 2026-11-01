@@ -1,26 +1,38 @@
 """Generate notebooks/stage7_disease_gsmap.ipynb — Disease association from the frozen embedding (gsMap swap).
 
-Design (per the selected pipeline, 2026-10-31 triage):
-- SKIP gsMap Step 1 (find_latent_representations): our frozen S5N-BASE fused
-  embedding goes into obsm['fused'] and is passed via --latent_representation.
-- KEEP: run_latent_to_gene -> run_generate_ldscore -> run_spatial_ldsc ->
-  run_cauchy_combination (annotation = our domains).
-- PILOT: A1 only. Traits = Height (negative control) + IQ, both ready-formatted
-  in the official gsMap example bundle (no sumstats formatting risk in pilot).
-  SLE etc. come in Phase 2 via gsmap format_sumstats (template cell included).
-- Memory guard: --spots_per_chunk 250 (docs: ~40GB at 1000; Kaggle RAM is lower,
-  and A1 has only ~3.5k spots).
-- Alignment guard: domains recomputed by the fixed recipe (standard-scale +
-  kmeans, declared k=10) on the loaded embedding; post-hoc ARI vs annotation is
-  printed as a plumbing check (expect ~0.22, Exp0 BASE/A1). Labels never select
-  anything; the recipe runs regardless.
+REWRITE v2 (2026-11-02), incorporating every failure from the first live run:
+1. Downloads: chunked Range downloader (32 MB chunks, per-chunk retry,
+   marker-guarded resume, gzip -t verification). wget truncated silently;
+   curl -C - resume appended to corrupt prefixes. Server provably honors Range.
+2. Disk discipline: Kaggle /kaggle/working is only 20 GB and FILLED UP during
+   the first run (that is what killed generate_ldscore at chrom 8). The
+   download cell now deletes each tarball right after extraction and drops
+   the example ST data (only the GWAS folder is needed). df is printed around
+   heavy steps.
+3. Every gsMap call goes through run_v(): output is captured and the last 30
+   lines are printed on failure (the bare wrapper traceback hid gsMap's real
+   error in run 1).
+4. The LD-score loop is resumable: a progress JSON checkpoints each finished
+   chromosome; a failed chromosome is retried once at --spots_per_chunk 100.
+   ALREADY_DONE seeds {1..7} for the user's current session (chroms 1-7
+   completed 2026-11-01; chrom 8 died on the full disk). Empty it for a
+   from-scratch run.
 
-CLI facts verified from the official gsMap docs (2026-11-01):
-- binary is lowercase `gsmap`; install: pip install gsMap (python>=3.10)
-- resources: https://yanglab.westlake.edu.cn/data/gsMap/gsMap_resource.tar.gz
-- examples:  https://yanglab.westlake.edu.cn/data/gsMap/gsMap_example_data.tar.gz
-- input h5ad: counts in layers['count'], obsm['spatial'], obs annotation column
-- run_latent_to_gene has NO --data_layer flag (do not add one)
+Design (selected pipeline, 2026-10-31 triage) — unchanged:
+- SKIP gsMap Step 1: frozen S5N-BASE fused embedding in obsm['fused'],
+  passed via --latent_representation (documented custom-latent route).
+- KEEP: latent_to_gene -> generate_ldscore -> spatial_ldsc -> cauchy.
+- PILOT: A1; traits Height (negative control) + IQ, both ready-formatted in
+  the official example bundle. SLE panel = Phase 2 (template cell at end).
+- Domains: fixed recipe (standard-scale + kmeans, declared k=10) on the
+  loaded embedding; post-hoc ARI printed as alignment check (expect ~0.22).
+
+CLI facts verified from the official gsMap docs (2026-11-01): binary is
+lowercase `gsmap`; pip install gsMap (python>=3.10); bundles at
+yanglab.westlake.edu.cn/data/gsMap/; input h5ad = layers['count'] +
+obsm['spatial'] + obs annotation column; run_latent_to_gene has NO
+--data_layer flag; docs quote ~40 GB RAM for LD steps at spots_per_chunk
+1000, hence 250 here.
 
 Run: python3 scripts/gen_gsmap_nb.py
 """
@@ -38,26 +50,26 @@ cells.append(md('''# Stage 7 — Disease Association from the Frozen Embedding (
 
 **Design:** gsMap (Song et al., *Nature* 2025) normally trains its own 32-d GAT
 embedding in Step 1. **We skip Step 1 entirely** and supply OUR frozen fused
-embedding instead: it is stored in `obsm['fused']` and passed to
-`run_latent_to_gene` via `--latent_representation fused` (the documented
-custom-latent route). Everything downstream (microdomains → GSS → SNP
-annotation → per-spot S-LDSC → Cauchy per domain) is gsMap's own machinery,
-unchanged.
+embedding instead: stored in `obsm['fused']`, passed to `run_latent_to_gene`
+via `--latent_representation fused` (the documented custom-latent route).
+Everything downstream (microdomains → GSS → SNP annotation → per-spot S-LDSC
+→ Cauchy per domain) is gsMap's own machinery, unchanged.
 
 **Frozen inputs:** S5N-BASE fused embedding for A1 (seed 42) + domains from the
 fixed one-pipeline recipe (standard-scale → k-means, declared k=10). The
 embedding and domains are never retrained or re-selected using disease data.
 
-**Pilot traits (both ready-formatted in the official example bundle):**
-- **Height** — NEGATIVE CONTROL. Expect: no domain significant. If height
-  lights up, the harness is broken, not the biology.
-- **IQ** — pipeline proof: a real trait producing per-spot maps + a domain table.
-Phase 2 (SLE and the rest of the pre-registered panel) uses
-`gsmap format_sumstats` — template at the end of this notebook.
+**Pilot traits (ready-formatted in the official example bundle):**
+- **Height** — NEGATIVE CONTROL. Expect: no domain significant.
+- **IQ** — pipeline proof: a real trait producing maps + a domain table.
+Phase 2 (SLE etc.) uses `gsmap format_sumstats` — template at the end.
+
+**v2 hardening (lessons from run 1):** chunked verified downloads; tarballs
+deleted immediately after extraction (the 20 GB working disk filled up in
+run 1 and killed LD-score generation at chrom 8); every gsMap call prints its
+own error output on failure; the chromosome loop checkpoints and resumes.
 
 **Output:** `runs/s7-disease/` (Cauchy domain × trait tables + run log).
-**Watch out:** gsMap's documented memory is ~40 GB for the LD steps at
-`--spots_per_chunk 1000`; we use 250 (A1 has only ~3.5k spots).
 '''))
 
 cells.append(code('''import os, sys, json, subprocess, time
@@ -195,7 +207,9 @@ print("layers:", list(pkg.layers.keys()), "| obsm:", list(pkg.obsm.keys()),
       "| obs domain counts:", pkg.obs["domain"].value_counts().to_dict())
 '''))
 
-cells.append(code('''# ---------- Download gsMap resources + example GWAS ----------
+cells.append(code('''# ---------- Download gsMap resources + example GWAS (chunked, disk-safe) ----------
+import glob, shutil
+
 def run(cmd, **kw):
     print("+", " ".join(cmd), flush=True)
     r = subprocess.run(cmd, **kw)
@@ -203,12 +217,26 @@ def run(cmd, **kw):
         raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
     return r
 
+def run_v(cmd):
+    # Like run(), but captures output and prints gsMap's own last 30 lines on
+    # failure — a bare wrapper traceback hid the real error in run 1.
+    print("+", " ".join(cmd), flush=True)
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0:
+        tail = "\\n".join((r.stdout + "\\n" + r.stderr).splitlines()[-30:])
+        print("----- gsMap output (last 30 lines) -----")
+        print(tail)
+        print("----------------------------------------")
+        raise RuntimeError(f"failed ({r.returncode}): {' '.join(cmd[:2])}")
+    return r
+
 def fetch(url, dest, chunk=32 * 1024 * 1024, tries=6):
     # Chunked Range download. One long stream to this server keeps dying:
-    # wget truncated silently, and curl -C - resume produced corrupt files.
+    # wget truncated silently; curl -C - resume appended to corrupt prefixes.
     # Each 32 MB chunk is a short request, retried on its own, appended in
-    # order. Re-running the cell resumes — but only from a prefix THIS
-    # function wrote (marker file); foreign partials are discarded.
+    # order. Re-running resumes — but only from a prefix THIS function wrote
+    # (marker file); foreign partials are discarded. gzip -t verifies before
+    # tar ever touches the file.
     import urllib.request
     def _req(range_hdr=None):
         h = {"User-Agent": "Mozilla/5.0"}
@@ -260,16 +288,30 @@ def fetch(url, dest, chunk=32 * 1024 * 1024, tries=6):
         raise RuntimeError("archive corrupt even after chunked download: " + dest)
     os.remove(marker)
 
+def df():
+    print(subprocess.run(["df", "-h", "/kaggle/working"],
+                         capture_output=True, text=True).stdout)
+
 os.chdir(GSMAP_DIR)
-print(subprocess.run(["df", "-h", GSMAP_DIR], capture_output=True, text=True).stdout)
+df()
 if not os.path.isdir("gsMap_resource"):
     fetch("https://yanglab.westlake.edu.cn/data/gsMap/gsMap_resource.tar.gz",
           "gsMap_resource.tar.gz")
     run(["tar", "-xzf", "gsMap_resource.tar.gz"])
+    os.remove("gsMap_resource.tar.gz")  # disk discipline: 20 GB working dir
 if not os.path.isdir("gsMap_example_data"):
     fetch("https://yanglab.westlake.edu.cn/data/gsMap/gsMap_example_data.tar.gz",
           "gsMap_example_data.tar.gz")
     run(["tar", "-xzf", "gsMap_example_data.tar.gz"])
+    os.remove("gsMap_example_data.tar.gz")
+# Only the GWAS folder of the example bundle is needed — drop the example ST data
+if os.path.isdir("gsMap_example_data/ST"):
+    shutil.rmtree("gsMap_example_data/ST")
+    print("dropped example ST data (not needed)")
+for leftover in glob.glob("*.tar.gz"):
+    os.remove(leftover)
+    print("removed leftover archive:", leftover)
+df()
 
 RES = os.path.join(GSMAP_DIR, "gsMap_resource")
 checks = {
@@ -281,6 +323,7 @@ checks = {
 }
 for name, p in checks.items():
     print(f"{name:12} {'OK' if os.path.exists(p) else 'MISSING -> ' + p}")
+assert all(os.path.exists(p) for p in checks.values()), "resource check failed — see MISSING lines"
 '''))
 
 cells.append(code('''# ---------- gsMap Step 2: latent_to_gene with OUR embedding ----------
@@ -288,31 +331,58 @@ cells.append(code('''# ---------- gsMap Step 2: latent_to_gene with OUR embeddin
 WD = os.path.join(GSMAP_DIR, "workdir")
 os.makedirs(WD, exist_ok=True)
 t0 = time.time()
-run(["gsmap", "run_latent_to_gene",
-     "--workdir", WD,
-     "--sample_name", "A1",
-     "--input_hdf5_path", H5AD,
-     "--annotation", "domain",
-     "--latent_representation", "fused"])
+run_v(["gsmap", "run_latent_to_gene",
+       "--workdir", WD,
+       "--sample_name", "A1",
+       "--input_hdf5_path", H5AD,
+       "--annotation", "domain",
+       "--latent_representation", "fused"])
 print(f"latent_to_gene done in {(time.time()-t0)/60:.1f} min")
 '''))
 
-cells.append(code('''# ---------- gsMap Step 3: generate LD scores (per chromosome) ----------
-# spots_per_chunk 250 (docs: ~40GB at 1000; Kaggle RAM is smaller, A1 is small)
+cells.append(code('''# ---------- gsMap Step 3: generate LD scores (resumable, per chromosome) ----------
+# Progress is checkpointed to a JSON after every chromosome: re-running this
+# cell (or the whole notebook) resumes instead of restarting. A failed
+# chromosome is retried once at 100 spots/chunk (memory guard; docs quote
+# ~40 GB at 1000, Kaggle RAM is smaller, A1 has only ~3.5k spots).
+#
+# ALREADY_DONE seeds the progress ONLY when no progress file exists. It holds
+# the state of the first live run (2026-11-01): chroms 1-7 finished, chrom 8
+# died when the working disk filled. For a from-scratch run, set it to set().
+ALREADY_DONE = {1, 2, 3, 4, 5, 6, 7}
+
+PROG = os.path.join(GSMAP_DIR, "ldscore_progress.json")
+done = set(json.load(open(PROG))) if os.path.exists(PROG) else set(ALREADY_DONE)
+print("chromosomes already done:", sorted(done))
+df()
+
+def ldscore_cmd(chrom, spc):
+    return ["gsmap", "run_generate_ldscore",
+            "--workdir", WD,
+            "--sample_name", "A1",
+            "--chrom", str(chrom),
+            "--bfile_root", f"{RES}/LD_Reference_Panel/1000G_EUR_Phase3_plink/1000G.EUR.QC",
+            "--keep_snp_root", f"{RES}/LDSC_resource/hapmap3_snps/hm",
+            "--gtf_annotation_file", f"{RES}/genome_annotation/gtf/gencode.v46lift37.basic.annotation.gtf",
+            "--gene_window_size", "50000",
+            "--spots_per_chunk", str(spc)]
+
 t0 = time.time()
 for chrom in range(1, 23):
+    if chrom in done:
+        continue
     tc = time.time()
-    run(["gsmap", "run_generate_ldscore",
-         "--workdir", WD,
-         "--sample_name", "A1",
-         "--chrom", str(chrom),
-         "--bfile_root", f"{RES}/LD_Reference_Panel/1000G_EUR_Phase3_plink/1000G.EUR.QC",
-         "--keep_snp_root", f"{RES}/LDSC_resource/hapmap3_snps/hm",
-         "--gtf_annotation_file", f"{RES}/genome_annotation/gtf/gencode.v46lift37.basic.annotation.gtf",
-         "--gene_window_size", "50000",
-         "--spots_per_chunk", "250"])
-    print(f"  chrom {chrom} done in {(time.time()-tc)/60:.1f} min", flush=True)
-print(f"ALL LD scores done in {(time.time()-t0)/60:.1f} min")
+    try:
+        run_v(ldscore_cmd(chrom, 250))
+    except RuntimeError:
+        print(f"  chrom {chrom} failed at 250 spots/chunk — retrying at 100")
+        run_v(ldscore_cmd(chrom, 100))
+    done.add(chrom)
+    json.dump(sorted(done), open(PROG, "w"))
+    print(f"  chrom {chrom} done in {(time.time()-tc)/60:.1f} min "
+          f"({len(done)}/22)", flush=True)
+print(f"LD scores complete in {(time.time()-t0)/60:.1f} min this run")
+df()
 '''))
 
 cells.append(code('''# ---------- gsMap Step 4: per-spot spatial LDSC (Height control, then IQ) ----------
@@ -322,27 +392,26 @@ TRAITS = {
 }
 for trait, ss in TRAITS.items():
     t0 = time.time()
-    run(["gsmap", "run_spatial_ldsc",
-         "--workdir", WD,
-         "--sample_name", "A1",
-         "--trait_name", trait,
-         "--sumstats_file", ss,
-         "--w_file", f"{RES}/LDSC_resource/weights_hm3_no_hla/weights.",
-         "--num_processes", "4"])
+    run_v(["gsmap", "run_spatial_ldsc",
+           "--workdir", WD,
+           "--sample_name", "A1",
+           "--trait_name", trait,
+           "--sumstats_file", ss,
+           "--w_file", f"{RES}/LDSC_resource/weights_hm3_no_hla/weights.",
+           "--num_processes", "4"])
     print(f"spatial_ldsc [{trait}] done in {(time.time()-t0)/60:.1f} min", flush=True)
 '''))
 
 cells.append(code('''# ---------- gsMap Step 5: Cauchy combination per domain ----------
 for trait in TRAITS:
-    run(["gsmap", "run_cauchy_combination",
-         "--workdir", WD,
-         "--sample_name", "A1",
-         "--trait_name", trait,
-         "--annotation", "domain"])
+    run_v(["gsmap", "run_cauchy_combination",
+           "--workdir", WD,
+           "--sample_name", "A1",
+           "--trait_name", trait,
+           "--annotation", "domain"])
 print("cauchy done")
 
 # Discover + collect outputs (exact filenames are workdir-internal; glob them)
-import glob
 found = sorted(glob.glob(os.path.join(WD, "**", "*auchy*"), recursive=True) +
                glob.glob(os.path.join(WD, "**", "*A1*"), recursive=True))
 for f in found:
@@ -350,7 +419,7 @@ for f in found:
 '''))
 
 cells.append(code('''# ---------- Summarise: domain x trait table -> push to GitHub ----------
-import glob, shutil
+import shutil
 summary = {"dataset": "A1", "embedding": "S5N-BASE seed42 fused (obsm['fused'])",
            "domains": "standard+kmeans k=10 (fixed one-pipeline recipe)",
            "traits": {}, "notes": "Height = negative control (expect null)"}
@@ -360,8 +429,8 @@ cauchy_files = [f for f in glob.glob(os.path.join(WD, "**", "*.csv*"), recursive
 print("cauchy files:", cauchy_files)
 for f in cauchy_files:
     try:
-        df = pd.read_csv(f)
-        print("\\n", os.path.basename(f)); print(df.to_string()[:1500])
+        dfx = pd.read_csv(f)
+        print("\\n", os.path.basename(f)); print(dfx.to_string()[:1500])
         dest = os.path.join(OUT, "A1_" + os.path.basename(f))
         shutil.copy(f, dest)
     except Exception as e:
@@ -373,6 +442,7 @@ with open(os.path.join(OUT, "A1_gsmap_pilot_log.json"), "w") as fh:
 
 git_push("s7-disease: gsMap pilot A1 (BASE embedding swapped in; Height control + IQ)")
 print("\\nPilot done. Read the Height table first: it should be null across domains.")
+df()
 '''))
 
 cells.append(md('''## Phase 2 — adding the real trait panel (SLE first)
@@ -422,8 +492,9 @@ text = open(out_path).read()
 for token in ["run_latent_to_gene", "--latent_representation", "fused",
               "run_generate_ldscore", "spots_per_chunk", "run_spatial_ldsc",
               "run_cauchy_combination", "GIANT_EUR_Height_2022",
-              "gencode.v46lift37", "ALIGNMENT CHECK"]:
+              "gencode.v46lift37", "ALIGNMENT CHECK",
+              "chunk=32", "ldscore_progress", "ALREADY_DONE", "run_v",
+              "dropped example ST data", "gzip integrity"]:
     assert token in text, f"MISSING TOKEN: {token}"
-assert "run_find_latent_representations" not in text.replace(
-    "SKIPPED by design", "").replace("Step 1", ""), "Step 1 command leaked in"
-print("content check: all key tokens present")
+assert '"wget"' not in text, "wget command leaked into v2"
+print("content check: all key tokens present, no wget command")
