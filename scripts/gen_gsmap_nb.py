@@ -203,22 +203,62 @@ def run(cmd, **kw):
         raise RuntimeError(f"command failed ({r.returncode}): {' '.join(cmd)}")
     return r
 
-def fetch(url, dest, tries=4):
-    # NOTE: plain `wget -q` silently left a truncated archive in the first run
-    # (wget exit 0, then tar exit 2). curl -C - resumes partial downloads, and
-    # `gzip -t` proves the archive is complete BEFORE tar ever touches it.
-    for a in range(1, tries + 1):
-        subprocess.run(["curl", "-L", "-C", "-", "--retry", "3", "-o", dest, url])
-        if os.path.exists(dest):
-            ok = subprocess.run(["gzip", "-t", dest]).returncode == 0
-            print(f"  attempt {a}: {os.path.getsize(dest)/1e9:.2f} GB, "
-                  f"gzip integrity {'OK' if ok else 'BAD'}", flush=True)
-            if ok:
-                return
-            if a == tries - 1:
-                print("  restarting download from scratch")
-                os.remove(dest)
-    raise RuntimeError("download incomplete after retries: " + url)
+def fetch(url, dest, chunk=32 * 1024 * 1024, tries=6):
+    # Chunked Range download. One long stream to this server keeps dying:
+    # wget truncated silently, and curl -C - resume produced corrupt files.
+    # Each 32 MB chunk is a short request, retried on its own, appended in
+    # order. Re-running the cell resumes — but only from a prefix THIS
+    # function wrote (marker file); foreign partials are discarded.
+    import urllib.request
+    def _req(range_hdr=None):
+        h = {"User-Agent": "Mozilla/5.0"}
+        if range_hdr:
+            h["Range"] = range_hdr
+        return urllib.request.Request(url, headers=h)
+    with urllib.request.urlopen(_req(), timeout=60) as r:
+        total = int(r.headers.get("Content-Length") or 0)
+    print(f"  {dest}: expected {total/1e9:.2f} GB", flush=True)
+    assert total > 0, "server gave no Content-Length"
+    marker = dest + ".chunked"
+    if os.path.exists(dest) and not os.path.exists(marker):
+        print("  discarding partial file from an earlier download method")
+        os.remove(dest)
+    open(marker, "a").close()
+    have = os.path.getsize(dest) if os.path.exists(dest) else 0
+    if have > total:
+        os.remove(dest); have = 0
+    with open(dest, "ab") as f:
+        pos = have
+        while pos < total:
+            end = min(pos + chunk, total) - 1
+            data = None
+            for a in range(tries):
+                try:
+                    with urllib.request.urlopen(_req(f"bytes={pos}-{end}"),
+                                                timeout=180) as resp:
+                        if resp.status == 200:
+                            raise IOError("server ignored the Range header")
+                        data = resp.read()
+                    if len(data) == end - pos + 1:
+                        break
+                    print(f"  chunk @{pos/1e9:.2f} GB short read, retry", flush=True)
+                    data = None
+                except Exception as e:
+                    print(f"  chunk @{pos/1e9:.2f} GB failed ({str(e)[:80]}), "
+                          f"retry {a+1}/{tries}", flush=True)
+                    data = None
+            if data is None:
+                raise RuntimeError(f"chunk at byte {pos} failed {tries} times")
+            f.write(data); f.flush()
+            pos += len(data)
+            if (pos // chunk) % 10 < 1:
+                print(f"  {pos/1e9:.2f} / {total/1e9:.2f} GB", flush=True)
+    ok = subprocess.run(["gzip", "-t", dest]).returncode == 0
+    print(f"  gzip integrity: {'OK' if ok else 'BAD'}", flush=True)
+    if not ok:
+        os.remove(dest); os.remove(marker)
+        raise RuntimeError("archive corrupt even after chunked download: " + dest)
+    os.remove(marker)
 
 os.chdir(GSMAP_DIR)
 print(subprocess.run(["df", "-h", GSMAP_DIR], capture_output=True, text=True).stdout)
