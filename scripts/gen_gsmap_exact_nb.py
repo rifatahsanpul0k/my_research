@@ -98,6 +98,10 @@ disk-full crash once slipped through and killed Step 4); tarballs deleted
 immediately after extraction (20 GB disk); completed gsMap steps are skipped
 via gsMap's own output markers; every gsMap call prints its own error output
 on failure; the chromosome loop checkpoints and resumes.
+**v4 fix (2026-11-02):** the required resource/GWAS files are located by NAME
+anywhere in the extracted tree and every gsMap path is derived from the finds
+— a live run extracted cleanly yet failed the old fixed-path check. An
+incomplete tree is moved aside and re-fetched once, never silently deleted.
 
 **Output:** `runs/s7-disease/` (Cauchy domain × trait tables + run log).
 '''))
@@ -246,7 +250,7 @@ print("layers:", list(pkg.layers.keys()), "| obsm:", list(pkg.obsm.keys()),
       "| obs domain counts:", pkg.obs["domain"].value_counts().to_dict())
 '''))
 
-cells.append(code('''# ---------- Download gsMap resources + example GWAS (file-verified) ----------
+cells.append(code('''# ---------- Download gsMap resources + example GWAS (discovered by filename) ----------
 import glob, shutil
 
 def run(cmd, **kw):
@@ -331,52 +335,108 @@ def df():
     print(subprocess.run(["df", "-h", "/kaggle/working"],
                          capture_output=True, text=True).stdout)
 
-# --- Required files (readiness is judged on THESE, never on folders) ---
-RES = os.path.join(GSMAP_DIR, "gsMap_resource")
-KEY_FILES = {
-    "bfile bim":  f"{RES}/LD_Reference_Panel/1000G_EUR_Phase3_plink/1000G.EUR.QC.bim",
-    "gtf":        f"{RES}/genome_annotation/gtf/gencode.v46lift37.basic.annotation.gtf",
-    "weights":    f"{RES}/LDSC_resource/weights_hm3_no_hla/weights.1.l2.ldscore.gz",
-    "height gwas": f"{GSMAP_DIR}/gsMap_example_data/GWAS/GIANT_EUR_Height_2022_Nature.sumstats.gz",
-    "iq gwas":     f"{GSMAP_DIR}/gsMap_example_data/GWAS/IQ_NG_2018.sumstats.gz",
-}
-def resource_ready():
-    return all(os.path.exists(KEY_FILES[k]) for k in ["bfile bim", "gtf", "weights"])
-def example_ready():
-    return all(os.path.exists(KEY_FILES[k]) for k in ["height gwas", "iq gwas"])
+# --- Resources are DISCOVERED by filename, never trusted at fixed paths ---
+# (2026-11-02 live failure: the bundle downloaded + extracted cleanly, yet
+# v3's fixed-path readiness assert fired. So the pipeline now FINDS the files
+# it needs wherever they sit in the extracted tree, derives every downstream
+# gsMap path from the finds, and never deletes an extracted tree on a failed
+# check — an incomplete tree is moved aside and re-fetched exactly once.)
+RES = os.path.join(GSMAP_DIR, "gsMap_resource")  # expected root; discovery may find another
+
+def _find1(pat):
+    hits = sorted(glob.glob(os.path.join(GSMAP_DIR, "**", pat), recursive=True))
+    return hits[0] if hits else None
+
+def _tree(p, depth=2):
+    for dp, dns, fns in os.walk(p):
+        lvl = dp.replace(p, "").count(os.sep)
+        if lvl > depth:
+            continue
+        print("  " * lvl + os.path.basename(dp) + "/")
+        if lvl == depth:
+            for fn in sorted(fns)[:8]:
+                print("  " * (lvl + 1) + fn)
+
+BIM = GTF_FILE = W1 = HEIGHT_SS = IQ_SS = None
+BFILE_ROOT = HM_ROOT = W_PREFIX = None
+
+def discover():
+    global BIM, GTF_FILE, W1, HEIGHT_SS, IQ_SS, BFILE_ROOT, HM_ROOT, W_PREFIX, RES
+    BIM = _find1("1000G.EUR.QC.bim")
+    GTF_FILE = _find1("gencode*.gtf") or _find1("*.gtf")
+    W1 = _find1("weights.1.l2.ldscore.gz")
+    HEIGHT_SS = _find1("GIANT_EUR_Height_2022_Nature.sumstats.gz")
+    IQ_SS = _find1("IQ_NG_2018.sumstats.gz")
+    if BIM:
+        BFILE_ROOT = BIM[:-len(".bim")]
+        RES = os.path.dirname(os.path.dirname(os.path.dirname(BIM)))
+    if W1:
+        W_PREFIX = W1[:-len("1.l2.ldscore.gz")]  # .../weights_hm3_no_hla/weights.
+    hm_dirs = sorted(glob.glob(os.path.join(GSMAP_DIR, "**", "hapmap3_snps"),
+                                recursive=True))
+    if hm_dirs:
+        HM_ROOT = os.path.join(hm_dirs[0], "hm")
+    return bool(BIM and GTF_FILE and W1)
+
+def resources_found():
+    discover()
+    return bool(BIM and GTF_FILE and W1)
+
+def example_found():
+    discover()
+    return bool(HEIGHT_SS and IQ_SS)
+
+def ensure_bundle(kind, url, tarball, std_dirname, found_fn):
+    if found_fn():
+        print(f"{kind}: already present and verified by discovery")
+        return
+    std = os.path.join(GSMAP_DIR, std_dirname)
+    aside = None
+    if os.path.isdir(std):
+        aside = std + "_incomplete"
+        if os.path.exists(aside):
+            shutil.rmtree(aside)
+        os.rename(std, aside)
+        print(f"{std_dirname} present but key files not found — moved aside, re-fetching")
+    fetch(url, tarball)
+    run(["tar", "-xzf", tarball])
+    os.remove(tarball)  # disk discipline: 20 GB working dir
+    if not found_fn():
+        print(f"--- tree of {GSMAP_DIR} (depth 2) ---")
+        _tree(GSMAP_DIR)
+        raise RuntimeError(f"{kind} files not found even after fresh extraction "
+                           "— send the tree listing above")
+    if aside and os.path.isdir(aside):
+        shutil.rmtree(aside)
+        print(f"fresh {kind} bundle verified — removed the incomplete copy")
 
 os.chdir(GSMAP_DIR)
 df()
-if not resource_ready():
-    if os.path.isdir("gsMap_resource"):
-        print("gsMap_resource exists but key files are missing — removing stub")
-        shutil.rmtree("gsMap_resource")
-    fetch("https://yanglab.westlake.edu.cn/data/gsMap/gsMap_resource.tar.gz",
-          "gsMap_resource.tar.gz")
-    run(["tar", "-xzf", "gsMap_resource.tar.gz"])
-    os.remove("gsMap_resource.tar.gz")  # disk discipline: 20 GB working dir
-    assert resource_ready(), "resource bundle still incomplete after extraction"
-if not example_ready():
-    if os.path.isdir("gsMap_example_data"):
-        print("gsMap_example_data exists but GWAS files are missing — removing stub")
-        shutil.rmtree("gsMap_example_data")
-    fetch("https://yanglab.westlake.edu.cn/data/gsMap/gsMap_example_data.tar.gz",
-          "gsMap_example_data.tar.gz")
-    run(["tar", "-xzf", "gsMap_example_data.tar.gz"])
-    os.remove("gsMap_example_data.tar.gz")
-    assert example_ready(), "example bundle still incomplete after extraction"
+ensure_bundle("resource",
+              "https://yanglab.westlake.edu.cn/data/gsMap/gsMap_resource.tar.gz",
+              "gsMap_resource.tar.gz", "gsMap_resource", resources_found)
+ensure_bundle("example",
+              "https://yanglab.westlake.edu.cn/data/gsMap/gsMap_example_data.tar.gz",
+              "gsMap_example_data.tar.gz", "gsMap_example_data", example_found)
 # Only the GWAS folder of the example bundle is needed — drop the example ST data
-if os.path.isdir("gsMap_example_data/ST"):
-    shutil.rmtree("gsMap_example_data/ST")
-    print("dropped example ST data (not needed)")
+if HEIGHT_SS:
+    ex_dir = os.path.dirname(os.path.dirname(HEIGHT_SS))
+    if os.path.isdir(os.path.join(ex_dir, "ST")):
+        shutil.rmtree(os.path.join(ex_dir, "ST"))
+        print("dropped example ST data (not needed)")
 for leftover in glob.glob("*.tar.gz"):
     os.remove(leftover)
     print("removed leftover archive:", leftover)
 df()
 
-for name, p in KEY_FILES.items():
-    print(f"{name:12} {'OK' if os.path.exists(p) else 'MISSING -> ' + p}")
-assert resource_ready() and example_ready(), "resource check failed — see MISSING lines"
+print("resource root :", RES)
+print("bfile prefix  :", BFILE_ROOT)
+print("gtf           :", GTF_FILE)
+print("keep_snp root :", HM_ROOT)
+print("weights prefix:", W_PREFIX)
+print("height gwas   :", HEIGHT_SS)
+print("iq gwas       :", IQ_SS)
+assert resources_found() and example_found(), "resource check failed — see paths above"
 print("all resources verified")
 '''))
 
@@ -418,9 +478,9 @@ else:
                 "--workdir", WD,
                 "--sample_name", "A1",
                 "--chrom", str(chrom),
-                "--bfile_root", f"{RES}/LD_Reference_Panel/1000G_EUR_Phase3_plink/1000G.EUR.QC",
-                "--keep_snp_root", f"{RES}/LDSC_resource/hapmap3_snps/hm",
-                "--gtf_annotation_file", f"{RES}/genome_annotation/gtf/gencode.v46lift37.basic.annotation.gtf",
+                "--bfile_root", BFILE_ROOT,
+                "--keep_snp_root", HM_ROOT,
+                "--gtf_annotation_file", GTF_FILE,
                 "--gene_window_size", "50000",
                 "--spots_per_chunk", str(spc)]
 
@@ -444,8 +504,8 @@ else:
 
 cells.append(code('''# ---------- gsMap Step 4: per-spot spatial LDSC (Height control, then IQ) ----------
 TRAITS = {
-    "Height": f"{GSMAP_DIR}/gsMap_example_data/GWAS/GIANT_EUR_Height_2022_Nature.sumstats.gz",
-    "IQ":     f"{GSMAP_DIR}/gsMap_example_data/GWAS/IQ_NG_2018.sumstats.gz",
+    "Height": HEIGHT_SS,
+    "IQ":     IQ_SS,
 }
 for trait, ss in TRAITS.items():
     assert os.path.exists(ss), f"sumstats missing for {trait}: {ss}"
@@ -457,7 +517,7 @@ for trait, ss in TRAITS.items():
            "--sample_name", "A1",
            "--trait_name", trait,
            "--sumstats_file", ss,
-           "--w_file", f"{RES}/LDSC_resource/weights_hm3_no_hla/weights.",
+           "--w_file", W_PREFIX,
            "--num_processes", "4"])
     print(f"spatial_ldsc [{trait}] done in {(time.time()-t0)/60:.1f} min", flush=True)
 '''))
@@ -551,9 +611,10 @@ text = open(out_path).read()
 for token in ["run_latent_to_gene", "--latent_representation", "fused",
               "run_generate_ldscore", "spots_per_chunk", "run_spatial_ldsc",
               "run_cauchy_combination", "GIANT_EUR_Height_2022",
-              "gencode.v46lift37", "ALIGNMENT CHECK",
+              "gencode*.gtf", "ALIGNMENT CHECK",
               "chunk=32", "ldscore_progress", "run_v",
-              "resource_ready", "example_ready", "removing stub",
+              "resources_found", "example_found", "BFILE_ROOT", "W_PREFIX",
+              "HEIGHT_SS", "_incomplete", "ensure_bundle", "discover()",
               "A1_generate_ldscore.done", "A1_gene_marker_score.feather",
               "sumstats verified", "gzip integrity",
               "10x_human_lymph_node_A1_seed_42_embeddings.npy", "EMB_NAME",
@@ -561,6 +622,8 @@ for token in ["run_latent_to_gene", "--latent_representation", "fused",
     assert token in text, f"MISSING TOKEN: {token}"
 assert '"wget"' not in text, "wget command leaked into the notebook"
 assert "ALREADY_DONE" not in text, "stale ALREADY_DONE seed leaked into the notebook"
+assert 'f"{RES}/' not in text, "a fixed RES-relative gsMap path leaked into the notebook"
+assert "resource_ready" not in text, "stale fixed-path readiness leaked into the notebook"
 assert "s5-notebook" not in text, "old repo-runs embedding path leaked into the notebook"
 assert "fused_embedding.npy" not in text, "old embedding filename leaked into the notebook"
 print("content check: all key tokens present, uploaded-embedding route confirmed, no stale paths")
