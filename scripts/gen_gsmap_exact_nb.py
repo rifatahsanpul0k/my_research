@@ -102,6 +102,10 @@ on failure; the chromosome loop checkpoints and resumes.
 anywhere in the extracted tree and every gsMap path is derived from the finds
 — a live run extracted cleanly yet failed the old fixed-path check. An
 incomplete tree is moved aside and re-fetched once, never silently deleted.
+**v5 fix (2026-11-02):** the 1000G panel is per-chromosome
+(`1000G.EUR.QC.1.bim` … `.22.bim`) — no merged `.bim` exists, and v3/v4 keyed
+the readiness check on that phantom file. Discovery now keys on the
+chromosome-1 file and derives the `--bfile_root` prefix from it.
 
 **Output:** `runs/s7-disease/` (Cauchy domain × trait tables + run log).
 '''))
@@ -357,18 +361,24 @@ def _tree(p, depth=2):
             for fn in sorted(fns)[:8]:
                 print("  " * (lvl + 1) + fn)
 
-BIM = GTF_FILE = W1 = HEIGHT_SS = IQ_SS = None
+BIM = BIM22 = GTF_FILE = W1 = HEIGHT_SS = IQ_SS = None
 BFILE_ROOT = HM_ROOT = W_PREFIX = None
 
 def discover():
-    global BIM, GTF_FILE, W1, HEIGHT_SS, IQ_SS, BFILE_ROOT, HM_ROOT, W_PREFIX, RES
-    BIM = _find1("1000G.EUR.QC.bim")
+    global BIM, BIM22, GTF_FILE, W1, HEIGHT_SS, IQ_SS, BFILE_ROOT, HM_ROOT, W_PREFIX, RES
+    # The 1000G panel is PER-CHROMOSOME: 1000G.EUR.QC.1.bim ... .22.bim.
+    # There is NO single merged 1000G.EUR.QC.bim — keying the search on that
+    # name was the v3/v4 bug (the bundle was complete all along; the check
+    # could never pass). gsMap's --bfile_root takes the prefix and appends
+    # .<chrom> itself, so BFILE_ROOT is derived from the chromosome-1 file.
+    BIM = _find1("1000G.EUR.QC.1.bim")
+    BIM22 = _find1("1000G.EUR.QC.22.bim")
     GTF_FILE = _find1("gencode*.gtf") or _find1("*.gtf")
     W1 = _find1("weights.1.l2.ldscore.gz")
     HEIGHT_SS = _find1("GIANT_EUR_Height_2022_Nature.sumstats.gz")
     IQ_SS = _find1("IQ_NG_2018.sumstats.gz")
     if BIM:
-        BFILE_ROOT = BIM[:-len(".bim")]
+        BFILE_ROOT = BIM[:-len(".1.bim")]
         RES = os.path.dirname(os.path.dirname(os.path.dirname(BIM)))
     if W1:
         W_PREFIX = W1[:-len("1.l2.ldscore.gz")]  # .../weights_hm3_no_hla/weights.
@@ -380,7 +390,7 @@ def discover():
 
 def resources_found():
     discover()
-    return bool(BIM and GTF_FILE and W1)
+    return bool(BIM and BIM22 and GTF_FILE and W1 and HM_ROOT)
 
 def example_found():
     discover()
@@ -431,6 +441,8 @@ df()
 
 print("resource root :", RES)
 print("bfile prefix  :", BFILE_ROOT)
+print("bim chrom 1   :", BIM)
+print("bim chrom 22  :", BIM22)
 print("gtf           :", GTF_FILE)
 print("keep_snp root :", HM_ROOT)
 print("weights prefix:", W_PREFIX)
@@ -615,6 +627,7 @@ for token in ["run_latent_to_gene", "--latent_representation", "fused",
               "chunk=32", "ldscore_progress", "run_v",
               "resources_found", "example_found", "BFILE_ROOT", "W_PREFIX",
               "HEIGHT_SS", "_incomplete", "ensure_bundle", "discover()",
+              "1000G.EUR.QC.1.bim", "1000G.EUR.QC.22.bim", "BIM22",
               "A1_generate_ldscore.done", "A1_gene_marker_score.feather",
               "sumstats verified", "gzip integrity",
               "10x_human_lymph_node_A1_seed_42_embeddings.npy", "EMB_NAME",
@@ -622,6 +635,7 @@ for token in ["run_latent_to_gene", "--latent_representation", "fused",
     assert token in text, f"MISSING TOKEN: {token}"
 assert '"wget"' not in text, "wget command leaked into the notebook"
 assert "ALREADY_DONE" not in text, "stale ALREADY_DONE seed leaked into the notebook"
+assert '"1000G.EUR.QC.bim"' not in text, "phantom merged-bim search leaked into the notebook"
 assert 'f"{RES}/' not in text, "a fixed RES-relative gsMap path leaked into the notebook"
 assert "resource_ready" not in text, "stale fixed-path readiness leaked into the notebook"
 assert "s5-notebook" not in text, "old repo-runs embedding path leaked into the notebook"
