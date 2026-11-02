@@ -43,7 +43,8 @@ Design (selected pipeline, 2026-10-31 triage) — unchanged:
   passed via --latent_representation (documented custom-latent route).
 - KEEP: latent_to_gene -> generate_ldscore -> spatial_ldsc -> cauchy.
 - PILOT: A1; traits Height (negative control) + IQ, ready-formatted in the
-  official example bundle. SLE panel = Phase 2 (template cell at end).
+  official example bundle. Phase 2 (SLE cells appended 2026-11-03) reuses
+  the trait-independent LD scores and reads SLE against the Height table.
 - Domains: fixed recipe (standard-scale + kmeans, declared k=10) on the
   loaded embedding; post-hoc ARI printed as alignment check (expect ~0.22).
 
@@ -90,7 +91,8 @@ line up with the A1 spots before anything runs.
 **Pilot traits (ready-formatted in the official example bundle):**
 - **Height** — NEGATIVE CONTROL. Expect: no domain significant.
 - **IQ** — pipeline proof: a real trait producing maps + a domain table.
-Phase 2 (SLE etc.) uses `gsmap format_sumstats` — template at the end.
+Phase 2 (SLE) is built in at the end — the GWAS is munged in-notebook to
+LDSC format; only Steps 4–5 re-run per trait.
 
 **v3 hardening (lessons from runs 1–2):** chunked verified downloads;
 readiness judged by required FILES, not folders (a partial extraction from a
@@ -106,6 +108,11 @@ incomplete tree is moved aside and re-fetched once, never silently deleted.
 (`1000G.EUR.QC.1.bim` … `.22.bim`) — no merged `.bim` exists, and v3/v4 keyed
 the readiness check on that phantom file. Discovery now keys on the
 chromosome-1 file and derives the `--bfile_root` prefix from it.
+
+**Phase 2 (2026-11-03):** SLE appended at the end — Bentham 2015
+(GCST003156, EUR, N=23,210), munged in-notebook to LDSC format and filtered
+to gsMap's HapMap3 keep-lists; LD scores reused; the result is printed and
+pushed as a calibration comparison against the Height background.
 
 **Output:** `runs/s7-disease/` (Cauchy domain × trait tables + run log).
 '''))
@@ -576,30 +583,192 @@ print("\\nPilot done. Read the Height table first: it should be null across doma
 df()
 '''))
 
-cells.append(md('''## Phase 2 — adding the real trait panel (SLE first)
+cells.append(md('''## Phase 2 — SLE (first disease trait)
 
-For each new trait, you need sumstats with at least `SNP`, `Z`, `N` columns
-(gsMap keywords). Download from the GWAS Catalog, then format and re-run
-Steps 4–5 only (LD scores are trait-independent and already computed):
+**GWAS:** Bentham et al. 2015 (*Nat Genet*), GWAS Catalog **GCST003156** —
+European ancestry, 7,219 cases + 15,991 controls (N = 23,210), matching the
+1000G EUR LD panel. The raw deposit (`chrom, pos, rsid, other_allele,
+effect_allele, p, beta, se`) is munged in the next cell into LDSC format
+(`SNP, A1, A2, Z = beta/se, N`) and filtered to the HapMap3 SNP set gsMap
+itself scores — the same treatment the example Height/IQ files received.
 
-```bash
-# 1) format (adjust column-name flags to your file's headers)
-gsmap format_sumstats --sumstats <downloaded_file> --out SLE
-# -> produces SLE.sumstats.gz
+Only `spatial_ldsc` + Cauchy run; the pilot's LD scores are reused (they are
+trait-independent). **Read SLE against the Height table, not against
+p = 0.05** — a domain counts only where SLE clearly exceeds its Height
+background. The final cell prints and pushes that calibration comparison.
+'''))
 
-# 2) per-spot test + domain combination
-gsmap run_spatial_ldsc --workdir <WD> --sample_name A1 --trait_name SLE \\
-    --sumstats_file SLE.sumstats.gz \\
-    --w_file gsMap_resource/LDSC_resource/weights_hm3_no_hla/weights. \\
-    --num_processes 4
-gsmap run_cauchy_combination --workdir <WD> --sample_name A1 \\
-    --trait_name SLE --annotation domain
-```
+cells.append(code('''# ---------- Phase 2: SLE sumstats - download + munge to LDSC format ----------
+import glob, gzip, os, subprocess, time
+import numpy as np
+import pandas as pd
 
-Pre-registered panel — lymph node: SLE, RA, MS, IBD, T1D, asthma, Hodgkin,
-DLBCL, CLL. Brain datasets additionally need
-`--homolog_file gsMap_resource/homologs/mouse_human_homologs.txt` in the
-`run_latent_to_gene` call (gene-level only; human SNPs never map to mouse peaks).
+GSMAP_DIR = "/kaggle/working/gsmap"
+TRAIT_DIR = os.path.join(GSMAP_DIR, "traits")
+os.makedirs(TRAIT_DIR, exist_ok=True)
+SLE_RAW = os.path.join(TRAIT_DIR, "bentham_2015_sle.tsv.gz")
+SLE_SS = os.path.join(TRAIT_DIR, "SLE.sumstats.gz")
+SLE_URL = ("https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/"
+           "GCST003001-GCST004000/GCST003156/"
+           "bentham_2015_26502338_sle_efo0002690_1_gwas.sumstats.tsv.gz")
+SLE_BYTES = 323169910          # Content-Length verified 2026-11-03
+SLE_N = 7219 + 15991           # Bentham 2015 cases + controls = 23210
+
+def _get(url, dest, expected):
+    import urllib.request
+    got = os.path.getsize(dest) if os.path.exists(dest) else 0
+    if got != expected:
+        if os.path.exists(dest):
+            os.remove(dest)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=60) as r, open(dest, "wb") as f:
+            while True:
+                chunk = r.read(1 << 22)
+                if not chunk:
+                    break
+                f.write(chunk)
+        got = os.path.getsize(dest)
+    assert got == expected, f"size mismatch: got {got}, expected {expected}"
+    subprocess.run(["gzip", "-t", dest], check=True)
+    print("downloaded + verified:", dest, f"({got/1e6:.0f} MB)")
+
+if os.path.exists(SLE_SS):
+    print("SLE.sumstats.gz already present - skipping download + munge")
+else:
+    _get(SLE_URL, SLE_RAW, SLE_BYTES)
+    t0 = time.time()
+    raw = pd.read_csv(SLE_RAW, sep="\\t", usecols=["rsid", "other_allele",
+                        "effect_allele", "beta", "se"], dtype={"rsid": str})
+    print(f"raw rows: {len(raw):,}")
+    m = pd.DataFrame({
+        "SNP": raw["rsid"],
+        "A1": raw["effect_allele"].str.upper(),
+        "A2": raw["other_allele"].str.upper(),
+        "Z": raw["beta"] / raw["se"],
+        "N": SLE_N})
+    ok = (m["SNP"].str.startswith("rs")
+          & m["A1"].isin(list("ACGT")) & m["A2"].isin(list("ACGT"))
+          & np.isfinite(m["Z"]))
+    m = m[ok].drop_duplicates("SNP")
+    amb = {("A", "T"), ("T", "A"), ("C", "G"), ("G", "C")}
+    m = m[[(a1, a2) not in amb for a1, a2 in zip(m["A1"], m["A2"])]]
+    print(f"after QC (rsID, ACGT alleles, finite Z, dedup, non-ambiguous): {len(m):,}")
+    # keep only the SNPs gsMap scored: its own HapMap3 keep-lists
+    keep = set()
+    for f in glob.glob(os.path.join(GSMAP_DIR, "gsMap_resource", "LDSC_resource",
+                                    "hapmap3_snps", "*")):
+        if not os.path.isfile(f):
+            continue
+        try:
+            fh = gzip.open(f, "rt") if f.endswith(".gz") else open(f)
+            with fh:
+                keep.update(tok.split()[0] for tok in fh if tok.startswith("rs"))
+        except Exception:
+            pass
+    if keep:
+        m = m[m["SNP"].isin(keep)]
+        print(f"after HapMap3 keep-list filter: {len(m):,}")
+    else:
+        print("WARNING: no HapMap3 keep-lists found - keeping all QC'd SNPs")
+    assert len(m) > 200_000, "suspiciously few SNPs left after munging"
+    m.to_csv(SLE_SS, sep="\\t", index=False, compression="gzip")
+    os.remove(SLE_RAW)   # disk discipline
+    print(f"wrote {SLE_SS} in {time.time()-t0:.0f}s | Z range "
+          f"[{m['Z'].min():.1f}, {m['Z'].max():.1f}]")
+print(subprocess.run(["df", "-h", "/kaggle/working"],
+                     capture_output=True, text=True).stdout)
+'''))
+
+cells.append(code('''# ---------- Phase 2: spatial_ldsc + Cauchy for SLE (LD scores reused) ----------
+import glob, os, subprocess, time
+
+GSMAP_DIR = "/kaggle/working/gsmap"
+WD = os.path.join(GSMAP_DIR, "workdir")
+DONE = os.path.join(WD, "A1", "generate_ldscore", "A1_generate_ldscore.done")
+assert os.path.exists(DONE), ("LD scores not found - run the Phase 1 cells first "
+                              "(Steps 2-3, ~40 min); they are reused for every trait")
+_w1 = sorted(glob.glob(os.path.join(GSMAP_DIR, "**", "weights.1.l2.ldscore.gz"),
+                       recursive=True))
+assert _w1, "LDSC weights not found under the gsmap dir"
+W_PREFIX = _w1[0][:-len("1.l2.ldscore.gz")]
+print("weights prefix:", W_PREFIX)
+SLE_SS = os.path.join(GSMAP_DIR, "traits", "SLE.sumstats.gz")
+assert os.path.exists(SLE_SS), "SLE.sumstats.gz missing - run the munge cell above"
+
+def runp(cmd):
+    print("+", " ".join(cmd))
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0:
+        print((r.stdout or "")[-2500:])
+        print((r.stderr or "")[-2500:])
+        raise RuntimeError("command failed: " + cmd[1])
+    return r
+
+t0 = time.time()
+runp(["gsmap", "run_spatial_ldsc", "--workdir", WD, "--sample_name", "A1",
+      "--trait_name", "SLE", "--sumstats_file", SLE_SS,
+      "--w_file", W_PREFIX, "--num_processes", "4"])
+print(f"spatial_ldsc [SLE] done in {(time.time()-t0)/60:.1f} min")
+runp(["gsmap", "run_cauchy_combination", "--workdir", WD, "--sample_name", "A1",
+      "--trait_name", "SLE", "--annotation", "domain"])
+print("cauchy [SLE] done")
+'''))
+
+cells.append(code('''# ---------- Phase 2: calibrated read (SLE vs Height background) + push ----------
+import glob, os, shutil, subprocess
+import numpy as np
+import pandas as pd
+
+WD = os.path.join("/kaggle/working/gsmap", "workdir")
+
+def _cauchy(trait):
+    fs = glob.glob(os.path.join(WD, "**", f"A1_{trait}.Cauchy.csv.gz"), recursive=True)
+    assert fs, f"cauchy output for {trait} not found"
+    return pd.read_csv(fs[0])
+
+tab = None
+for trait in ["Height", "IQ", "SLE"]:
+    d = _cauchy(trait)[["annotation", "p_cauchy"]].rename(columns={"p_cauchy": trait})
+    tab = d if tab is None else tab.merge(d, on="annotation")
+for trait in ["Height", "IQ", "SLE"]:
+    tab[trait + " -log10p"] = -np.log10(tab[trait].clip(lower=1e-300))
+tab["SLE minus Height (log10)"] = tab["SLE -log10p"] - tab["Height -log10p"]
+tab = tab.sort_values("SLE minus Height (log10)", ascending=False)
+pd.set_option("display.width", 200)
+print(tab.to_string(index=False))
+print("\\nRead SLE by the LAST column: domains where SLE clearly exceeds its "
+      "Height background are the candidates. Raw SLE p-values alone prove "
+      "nothing - Height was significant almost everywhere.")
+
+OUT = os.path.join("/kaggle/working/my_research", "runs", "s7-disease")
+os.makedirs(OUT, exist_ok=True)
+sle_f = glob.glob(os.path.join(WD, "**", "A1_SLE.Cauchy.csv.gz"), recursive=True)[0]
+shutil.copy(sle_f, os.path.join(OUT, "A1_A1_SLE.Cauchy.csv.gz"))
+tab.to_csv(os.path.join(OUT, "A1_calibration_comparison.csv"), index=False)
+try:
+    def _sh(*a):
+        return subprocess.run(list(a), capture_output=True, text=True,
+                              cwd="/kaggle/working/my_research")
+    _sh("git", "add", "runs/s7-disease")
+    _sh("git", "commit", "-m", "stage7 phase2: SLE cauchy + calibration comparison (A1)")
+    _sh("git", "pull", "--rebase")
+    r = _sh("git", "push")
+    print("pushed" if r.returncode == 0 else
+          "push failed (tables saved in runs/s7-disease):\\n" + r.stderr[-500:])
+except Exception as e:
+    print("push skipped:", e)
+'''))
+
+cells.append(md('''## Phase 2 — how it continues
+
+Identical three cells per additional trait (new sumstats file, same munge
+rules, same LD scores): **RA, MS, IBD, T1D, asthma, Hodgkin, DLBCL, CLL** —
+the pre-registered lymph-node panel.
+
+Gates before any disease claim: (1) the trait's domain ranking differs from
+Height's; (2) the signal lands in domains that marker genes name as immune;
+(3) the pattern survives the gsMap-own-embedding sensitivity run; (4) D1
+replication. Wording: *disease-relevant programme*, never *diseased domain*.
 '''))
 
 nb = {
@@ -628,6 +797,8 @@ for token in ["run_latent_to_gene", "--latent_representation", "fused",
               "resources_found", "example_found", "BFILE_ROOT", "W_PREFIX",
               "HEIGHT_SS", "_incomplete", "ensure_bundle", "discover()",
               "1000G.EUR.QC.1.bim", "1000G.EUR.QC.22.bim", "BIM22",
+              "GCST003156", "bentham_2015_26502338", "SLE.sumstats.gz",
+              "SLE minus Height", "23210", "A1_calibration_comparison.csv",
               "A1_generate_ldscore.done", "A1_gene_marker_score.feather",
               "sumstats verified", "gzip integrity",
               "10x_human_lymph_node_A1_seed_42_embeddings.npy", "EMB_NAME",
