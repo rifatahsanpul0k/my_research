@@ -55,7 +55,8 @@ from the 1.73.8 package source (config.py argument parsers + auto-paths):
     REQUIRES --data_layer, has NO output-path argument (the latent h5ad is
     written to <workdir>/<sample>/find_latent_representations/
     <sample>_add_latent.h5ad with obsm['latent_GVAE']), and the neighbour
-    flag is --n_neighbors (default 11; tutorial value 200 kept).
+    flag is --n_neighbors (default 11; tutorial value 200, lowered to
+    100 in v3 — see below).
   - Step 2 takes --input_hdf5_path, has NO output-path argument, and the
     neighbour flag is --num_neighbour (default 21; tutorial value 200
     kept). With no --input_hdf5_path it defaults to Step 1's output; the
@@ -67,6 +68,18 @@ from the 1.73.8 package source (config.py argument parsers + auto-paths):
     source accepts a layer name or 'X'; all three feed it raw counts).
   - gsMap is pinned to ==1.73.8 in the install cell so the verified CLI
     cannot drift under the notebook again.
+
+v3 FIX (2026-11-04, after v2's run died in Step 1 with CUDA OOM): the
+flags were right and preprocessing completed (peak host RAM 13.55 GB),
+but the GAT's first forward pass tried a single 17.42 GiB CUDA gather
+allocation (200 neighbours x ~121,767 cells) against the Kaggle GPU's
+14.56 GiB total VRAM. Step 1's --n_neighbors is lowered 200 -> 100
+(user's choice; the gather scales linearly, so ~8.7 GiB), and the Step 1
+cell sets PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True against
+fragmentation on the remaining allocations. Step 2's --num_neighbour
+stays at the tutorial's 200 (a CPU-side latent kNN, not a GAT). This is
+the notebook's one deliberate deviation from the tutorial, forced by
+Kaggle's 16 GB GPU.
 
 Run: python3 scripts/gen_gsmap_paper_example_nb.py
 """
@@ -421,12 +434,21 @@ cells.append(code('''# ---------- Step 1: find latent representations (gsMap's O
 # tutorial page's Step 1 command is stale: wrong input-flag spelling, an
 # output-path argument that no longer exists, and no mention of the
 # REQUIRED data-layer argument). Verified equivalents of the tutorial's
-# intent: neighbours 200; latent written by gsMap itself to
+# intent: neighbours 200 in the tutorial, lowered to 100 in v3 (below);
+# latent written by gsMap itself to
 # <workdir>/<sample>/find_latent_representations/<sample>_add_latent.h5ad
 # with obsm['latent_GVAE']. All other GVAE settings are 1.73.8 defaults
 # (epochs 300, feat 256->128, GAT 64->30, lr 0.001, dropout 0.1, PCA 300).
-# Tutorial states ~60 GB RAM at ~120K cells; Kaggle has ~30 GB — this is
-# the step most likely to OOM. Skipped on re-run once its output exists.
+# v3 (2026-11-04): the tutorial's ~60 GB RAM figure was NOT the binding
+# constraint — v2's run cleared preprocessing at 13.55 GB peak host RAM,
+# then died at GAT epoch 0 with CUDA OOM: at 200 neighbours the GAT
+# propagate step tries ONE 17.42 GiB gather allocation vs the Kaggle
+# GPU's 14.56 GiB total VRAM. Neighbours lowered to 100 (user's call,
+# 2026-11-04): the gather scales linearly with neighbours, so ~8.7 GiB —
+# fits with modest headroom; expandable_segments is set to cut
+# fragmentation risk on the remaining allocations. This is the notebook's
+# ONE deliberate deviation from the tutorial. Skipped on re-run once its
+# output exists.
 import h5py
 with h5py.File(ST_H5AD, "r") as f:
     _layers = list(f["layers"].keys()) if "layers" in f else []
@@ -438,13 +460,14 @@ if os.path.exists(LATENT_H5AD):
     print("latent h5ad found — Step 1 already done, skipping")
 else:
     print(f"RAM available before Step 1: {mem_avail_gb():.0f} GB (tutorial: ~60 GB)")
+    os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
     t0 = time.time()
     run_v(["gsmap", "run_find_latent_representations",
            "--workdir", WD,
            "--sample_name", SAMPLE,
            "--input_hdf5_path", ST_H5AD,
            "--data_layer", DATA_LAYER,
-           "--n_neighbors", "200"])
+           "--n_neighbors", "100"])
     assert os.path.exists(LATENT_H5AD), "Step 1 finished but produced no latent h5ad"
     print(f"Step 1 done in {(time.time()-t0)/60:.1f} min")
     df()
@@ -695,6 +718,7 @@ for token in ["run_find_latent_representations", "latent_GVAE",
               "E16.5_E1S1.MOSTA", "_add_latent.h5ad",
               "input_hdf5_path", "data_layer", "DATA_LAYER",
               "n_neighbors", "num_neighbour", "gsMap==1.73.8",
+              "expandable_segments",
               "mouse_human_homologs.txt",
               "run_latent_to_gene", "run_generate_ldscore",
               "ABC_roadmap_merged.bed", "max_mkscore", "gene_window_first",
@@ -719,4 +743,8 @@ assert "fused_embedding" not in text, "swapped-embedding route leaked into the n
 assert "10x_human_lymph_node" not in text, "A1 dataset leaked into the notebook"
 assert '"1000G.EUR.QC.bim"' not in text, "phantom merged-bim search leaked into the notebook"
 assert "enhancer_only" not in text, "Strategy 2 leaked into the notebook"
+_src = "\n".join(c.get("source", "") for c in nb["cells"])
+assert '"--n_neighbors", "100"' in _src, "Step 1 must use n_neighbors 100 (v3 CUDA-OOM fix)"
+assert '"--n_neighbors", "200"' not in _src, "Step 1 still uses the CUDA-OOM value 200"
+assert '"--num_neighbour", "200"' in _src, "Step 2 must keep the tutorial num_neighbour 200"
 print("content check: all key tokens present, tutorial commands confirmed, no A1 leakage")
