@@ -91,6 +91,18 @@ gather tensor, which is why the naive linear estimate (k=100) failed.
 Step 1's --n_neighbors is now 30 — the largest probed value that fits.
 Step 2's --num_neighbour remains the tutorial's 200.
 
+v5 (2026-11-04): the working directory filled to 19-20 GB and the v3
+run's Step 1 save was found TRUNCATED (3.9 GB in
+find_latent_representations/, HDF5 object headers pointing past EOF —
+the disk filling mid-save is also the likely cause of v3's exit 1).
+Step 1's skip check now VALIDATES the latent file (opens it, requires
+obsm['latent_GVAE'] with shape (n>1000, 30)) and deletes/re-runs on a
+corrupt file instead of trusting existence. Disk budget, source-checked:
+Step 2's marker-score feather is float16 n_cells x n_genes = ~6.9 GB
+at this scale, so the raw ST h5ad (~4.8 GB) must be deleted after
+Step 1 completes (Steps 2-6 never read it — input_hdf5_path exists
+only in the Step 1/2 configs, and Step 2 receives Step 1's output).
+
 Run: python3 scripts/gen_gsmap_paper_example_nb.py
 """
 import json, os
@@ -470,9 +482,26 @@ print("example h5ad layers:", _layers)
 DATA_LAYER = "count" if "count" in _layers else ("counts" if "counts" in _layers else "X")
 print("data_layer for Step 1:", DATA_LAYER, "(the raw counts gsMap's GVAE expects)")
 
-if os.path.exists(LATENT_H5AD):
-    print("latent h5ad found — Step 1 already done, skipping")
+def _latent_ok(path):
+    # v5: existence alone is NOT proof Step 1 finished — the v3 run left
+    # a 3.9 GB latent file truncated mid-save (the disk filled), and a
+    # plain exists() check would have skipped Step 1 and fed Step 2 a
+    # corrupt file. Verify the file opens and really carries the latent.
+    try:
+        with h5py.File(path, "r") as f:
+            if "obsm" not in f or "latent_GVAE" not in f["obsm"]:
+                return False
+            shp = f["obsm"]["latent_GVAE"].shape
+            return len(shp) == 2 and shp[0] > 1000 and shp[1] == 30
+    except Exception:
+        return False
+
+if os.path.exists(LATENT_H5AD) and _latent_ok(LATENT_H5AD):
+    print("latent h5ad found and valid — Step 1 already done, skipping")
 else:
+    if os.path.exists(LATENT_H5AD):
+        print("existing latent h5ad is corrupt/incomplete — deleting it and re-running Step 1")
+        os.remove(LATENT_H5AD)
     print(f"RAM available before Step 1: {mem_avail_gb():.0f} GB (tutorial: ~60 GB)")
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
     t0 = time.time()
@@ -732,7 +761,7 @@ for token in ["run_find_latent_representations", "latent_GVAE",
               "E16.5_E1S1.MOSTA", "_add_latent.h5ad",
               "input_hdf5_path", "data_layer", "DATA_LAYER",
               "n_neighbors", "num_neighbour", "gsMap==1.73.8",
-              "expandable_segments",
+              "expandable_segments", "_latent_ok",
               "mouse_human_homologs.txt",
               "run_latent_to_gene", "run_generate_ldscore",
               "ABC_roadmap_merged.bed", "max_mkscore", "gene_window_first",
