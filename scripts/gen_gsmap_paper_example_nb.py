@@ -102,6 +102,9 @@ Step 2's marker-score feather is float16 n_cells x n_genes = ~6.9 GB
 at this scale, so the raw ST h5ad (~4.8 GB) must be deleted after
 Step 1 completes (Steps 2-6 never read it — input_hdf5_path exists
 only in the Step 1/2 configs, and Step 2 receives Step 1's output).
+v6: the Step 2 cell enforces the disk budget itself — it prints the
+free space, deletes the ST h5ad when space is short, and refuses to
+start Step 2 without room for the feather rather than truncating it.
 
 Run: python3 scripts/gen_gsmap_paper_example_nb.py
 """
@@ -530,6 +533,20 @@ if _feather:
     print("mkscore feather found — Step 2 already done, skipping:", _feather[0])
 else:
     assert os.path.exists(LATENT_H5AD), "latent h5ad missing — Step 1 did not finish"
+    # v6 disk guard: Step 2's mkscore feather is float16 n_cells x
+    # n_genes = 121,767 x 28,204 x 2 B = ~6.9 GB (source-checked).
+    # Starting without room for it would repeat the v3 truncation, so
+    # free the raw ST h5ad first if space is short — Steps 2-6 never
+    # read it (Step 2 takes Step 1's output; verified in the 1.73.8
+    # configs). It can always be re-downloaded if Step 1 must re-run.
+    import shutil as _sh
+    _free = _sh.disk_usage("/kaggle/working").free
+    print(f"disk free before Step 2: {_free/1e9:.1f} GB (feather needs ~6.9 GB)")
+    if _free < 8e9 and os.path.exists(ST_H5AD):
+        os.remove(ST_H5AD)
+        _free = _sh.disk_usage("/kaggle/working").free
+        print(f"deleted the raw ST h5ad (not needed after Step 1) — disk free now {_free/1e9:.1f} GB")
+    assert _sh.disk_usage("/kaggle/working").free > 7.5e9, "not enough disk for Step 2's feather — free space manually"
     print(f"RAM available before Step 2: {mem_avail_gb():.0f} GB (tutorial: ~45 GB)")
     t0 = time.time()
     run_v(["gsmap", "run_latent_to_gene",
@@ -761,7 +778,7 @@ for token in ["run_find_latent_representations", "latent_GVAE",
               "E16.5_E1S1.MOSTA", "_add_latent.h5ad",
               "input_hdf5_path", "data_layer", "DATA_LAYER",
               "n_neighbors", "num_neighbour", "gsMap==1.73.8",
-              "expandable_segments", "_latent_ok",
+              "expandable_segments", "_latent_ok", "disk free before Step 2",
               "mouse_human_homologs.txt",
               "run_latent_to_gene", "run_generate_ldscore",
               "ABC_roadmap_merged.bed", "max_mkscore", "gene_window_first",
