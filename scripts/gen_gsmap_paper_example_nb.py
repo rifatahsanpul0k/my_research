@@ -48,6 +48,26 @@ plumbing, never method:
     not kill a completed Steps 1-5 run
   - results pushed to runs/s7-paper-example/
 
+v2 FIX (2026-11-03, after the first Kaggle attempt failed in Step 1): the
+tutorial PAGE is stale against the installed gsMap 1.73.8 CLI. Verified
+from the 1.73.8 package source (config.py argument parsers + auto-paths):
+  - Step 1 takes --input_hdf5_path (not the tutorial's h5ad spelling),
+    REQUIRES --data_layer, has NO output-path argument (the latent h5ad is
+    written to <workdir>/<sample>/find_latent_representations/
+    <sample>_add_latent.h5ad with obsm['latent_GVAE']), and the neighbour
+    flag is --n_neighbors (default 11; tutorial value 200 kept).
+  - Step 2 takes --input_hdf5_path, has NO output-path argument, and the
+    neighbour flag is --num_neighbour (default 21; tutorial value 200
+    kept). With no --input_hdf5_path it defaults to Step 1's output; the
+    notebook passes Step 1's auto-path explicitly.
+  - Steps 3-6 flags were re-verified against the same source and were
+    already correct.
+  - --data_layer is chosen by a pre-flight read of the example h5ad:
+    'count' layer if present, else 'counts', else 'X' (the find_latent
+    source accepts a layer name or 'X'; all three feed it raw counts).
+  - gsMap is pinned to ==1.73.8 in the install cell so the verified CLI
+    cannot drift under the notebook again.
+
 Run: python3 scripts/gen_gsmap_paper_example_nb.py
 """
 import json, os
@@ -101,11 +121,19 @@ step completes** — an unsaved session loses the workdir, as the SLE run
 learned the hard way.
 
 **Output:** `runs/s7-paper-example/` (Cauchy tables for Height + IQ, run log).
+
+**v2 fix (2026-11-03):** the first attempt died in Step 1 — the tutorial
+*page* is stale against the installed gsMap **1.73.8** CLI (wrong flag
+spellings, a required data-layer argument the page never mentions, and
+output-path arguments that no longer exist). All six steps' commands have
+been rebuilt from the installed package's own argument definitions,
+gsMap is pinned to 1.73.8, and Step 1's output is read from gsMap's own
+workdir location. The method and every parameter value are unchanged.
 '''))
 
 cells.append(code('''import os, sys, json, subprocess, time
 
-for pkg in ["gsMap", "scanpy", "anndata", "scikit-learn", "pandas", "scipy"]:
+for pkg in ["gsMap==1.73.8", "scanpy", "anndata", "scikit-learn", "pandas", "scipy"]:
     subprocess.run([sys.executable, "-m", "pip", "install", "-q", pkg], check=True)
 
 r = subprocess.run(["gsmap", "-v"], capture_output=True, text=True)
@@ -373,8 +401,10 @@ SAMPLE = "E16.5_E1S1.MOSTA"
 WD = os.path.join(GSMAP_DIR, "example", "Mouse_Embryo")  # tutorial: ./example/Mouse_Embryo
 os.makedirs(WD, exist_ok=True)
 ST_DIR = os.path.dirname(ST_H5AD)
-LATENT_H5AD = os.path.join(ST_DIR, "E16.5_E1S1.MOSTA_latent.h5ad")
-GSS_H5AD = os.path.join(ST_DIR, "E16.5_E1S1.MOSTA_GSS.h5ad")
+# gsMap 1.73.8 writes Step 1's output ITSELF (no output-path argument):
+# <workdir>/<sample>/find_latent_representations/<sample>_add_latent.h5ad
+LATENT_H5AD = os.path.join(WD, SAMPLE, "find_latent_representations",
+                           SAMPLE + "_add_latent.h5ad")
 ANNOT = "annotation"   # obs column in the example h5ad (tutorial, Steps 5-6)
 TRAITS = {"Height": HEIGHT_SS, "IQ": IQ_SS}
 PROG_STATE = os.path.join(GSMAP_DIR, "paper_progress.json")
@@ -383,38 +413,51 @@ def load_state():
 def save_state(s):
     json.dump(s, open(PROG_STATE, "w"), indent=1)
 print("workdir:", WD)
-print("latent out:", LATENT_H5AD)
-print("gss out   :", GSS_H5AD)
+print("latent out (gsMap auto-path):", LATENT_H5AD)
 '''))
 
 cells.append(code('''# ---------- Step 1: find latent representations (gsMap's OWN GVAE embedding) ----------
-# Tutorial command, verbatim flags: --num_neighbors 200; latent is written to
-# obsm['latent_GVAE'] of the output h5ad. Tutorial states ~60 GB RAM at ~120K
-# cells; Kaggle has ~30 GB — this is the step most likely to OOM. If it dies,
-# the failure tail prints below; the step is skipped on re-run once its
-# output file exists, so a session that gets through it never repeats it.
+# Command rebuilt from the gsMap 1.73.8 package's own argument parser (the
+# tutorial page's Step 1 command is stale: wrong input-flag spelling, an
+# output-path argument that no longer exists, and no mention of the
+# REQUIRED data-layer argument). Verified equivalents of the tutorial's
+# intent: neighbours 200; latent written by gsMap itself to
+# <workdir>/<sample>/find_latent_representations/<sample>_add_latent.h5ad
+# with obsm['latent_GVAE']. All other GVAE settings are 1.73.8 defaults
+# (epochs 300, feat 256->128, GAT 64->30, lr 0.001, dropout 0.1, PCA 300).
+# Tutorial states ~60 GB RAM at ~120K cells; Kaggle has ~30 GB — this is
+# the step most likely to OOM. Skipped on re-run once its output exists.
+import h5py
+with h5py.File(ST_H5AD, "r") as f:
+    _layers = list(f["layers"].keys()) if "layers" in f else []
+print("example h5ad layers:", _layers)
+DATA_LAYER = "count" if "count" in _layers else ("counts" if "counts" in _layers else "X")
+print("data_layer for Step 1:", DATA_LAYER, "(the raw counts gsMap's GVAE expects)")
+
 if os.path.exists(LATENT_H5AD):
     print("latent h5ad found — Step 1 already done, skipping")
 else:
     print(f"RAM available before Step 1: {mem_avail_gb():.0f} GB (tutorial: ~60 GB)")
     t0 = time.time()
     run_v(["gsmap", "run_find_latent_representations",
-           "--num_neighbors", "200",
-           "--input_h5ad_path", ST_H5AD,
-           "--output_h5ad_path", LATENT_H5AD,
            "--workdir", WD,
-           "--sample_name", SAMPLE])
+           "--sample_name", SAMPLE,
+           "--input_hdf5_path", ST_H5AD,
+           "--data_layer", DATA_LAYER,
+           "--n_neighbors", "200"])
     assert os.path.exists(LATENT_H5AD), "Step 1 finished but produced no latent h5ad"
     print(f"Step 1 done in {(time.time()-t0)/60:.1f} min")
     df()
 '''))
 
 cells.append(code('''# ---------- Step 2: latent_to_gene (GSS from gsMap's own latent) ----------
-# Tutorial command, verbatim flags: --num_neighbors 200,
-# --latent_representation latent_GVAE, --homolog_file (mouse -> human;
-# REQUIRED here — the example is mouse, unlike human A1). Output: the GSS
-# h5ad plus gsMap's gene-marker-score feather inside the workdir; the
-# feather's existence is the skip marker (same convention as the A1 run).
+# Command rebuilt from the gsMap 1.73.8 parser: the neighbour flag is
+# --num_neighbour (tutorial value 200 kept; spatial neighbours stay at the
+# default 101), the input flag is --input_hdf5_path, and there is NO
+# output-path argument — GSS lands in gsMap's own workdir files (the
+# gene-marker-score feather is the skip marker, as in the A1 run). The
+# homolog file is REQUIRED here (mouse example; human A1 needed none).
+# Input passed explicitly: Step 1's own output h5ad (obsm['latent_GVAE']).
 import glob as _g
 _feather = _g.glob(os.path.join(WD, "**", "*gene_marker_score.feather"), recursive=True)
 if _feather:
@@ -424,12 +467,11 @@ else:
     print(f"RAM available before Step 2: {mem_avail_gb():.0f} GB (tutorial: ~45 GB)")
     t0 = time.time()
     run_v(["gsmap", "run_latent_to_gene",
-           "--num_neighbors", "200",
-           "--latent_representation", "latent_GVAE",
-           "--input_h5ad_path", LATENT_H5AD,
-           "--output_h5ad_path", GSS_H5AD,
            "--workdir", WD,
            "--sample_name", SAMPLE,
+           "--input_hdf5_path", LATENT_H5AD,
+           "--latent_representation", "latent_GVAE",
+           "--num_neighbour", "200",
            "--homolog_file", HOMOLOG])
     print(f"Step 2 done in {(time.time()-t0)/60:.1f} min")
     df()
@@ -650,13 +692,15 @@ print("nbformat: valid")
 # Content verification (AGENTS.md lesson: verify the OUTPUT notebook)
 text = open(out_path).read()
 for token in ["run_find_latent_representations", "latent_GVAE",
-              "E16.5_E1S1.MOSTA", "E16.5_E1S1.MOSTA_latent.h5ad",
-              "E16.5_E1S1.MOSTA_GSS.h5ad", "mouse_human_homologs.txt",
+              "E16.5_E1S1.MOSTA", "_add_latent.h5ad",
+              "input_hdf5_path", "data_layer", "DATA_LAYER",
+              "n_neighbors", "num_neighbour", "gsMap==1.73.8",
+              "mouse_human_homologs.txt",
               "run_latent_to_gene", "run_generate_ldscore",
               "ABC_roadmap_merged.bed", "max_mkscore", "gene_window_first",
               "gene_window_size", "spots_per_chunk",
               "run_spatial_ldsc", "run_cauchy_combination", "run_report",
-              "top_corr_genes", "num_neighbors",
+              "top_corr_genes",
               "GIANT_EUR_Height_2022", "IQ_NG_2018",
               "1000G.EUR.QC.1.bim", "1000G.EUR.QC.22.bim",
               "paper_ldscore_progress", "paper_progress.json",
@@ -665,6 +709,11 @@ for token in ["run_find_latent_representations", "latent_GVAE",
               "mem_avail_gb", "Strategy 3"]:
     assert token in text, f"MISSING TOKEN: {token}"
 assert '"wget"' not in text, "wget command leaked into the notebook"
+assert '"--num_neighbors"' not in text, "the tutorial's stale neighbour flag leaked into the notebook"
+assert '"--input_h5ad_path"' not in text, "the tutorial's stale input flag leaked into the notebook"
+assert '"--output_h5ad_path"' not in text, "the removed output-path argument leaked into the notebook"
+assert "MOSTA_latent.h5ad" not in text, "the tutorial's stale Step 1 output name leaked into the notebook"
+assert "MOSTA_GSS.h5ad" not in text, "the tutorial's stale Step 2 output name leaked into the notebook"
 assert "s5-notebook" not in text, "A1 repo-runs path leaked into the notebook"
 assert "fused_embedding" not in text, "swapped-embedding route leaked into the notebook"
 assert "10x_human_lymph_node" not in text, "A1 dataset leaked into the notebook"
