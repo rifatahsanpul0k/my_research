@@ -1,23 +1,24 @@
 """Generate notebooks/hello_pipeline_smoke_A1_colab.ipynb
 
-Colab variant of the hello-pipeline SMOKE TEST (A1 only). The pipeline
-cells are NOT duplicated here: this generator loads the Kaggle notebook
-(notebooks/hello_pipeline_smoke_A1.ipynb, same repo) and replaces only
-the platform-specific cells:
+Colab-only variant of the hello-pipeline SMOKE TEST (A1 only). The
+pipeline cells are NOT duplicated here: this generator loads the base
+notebook (notebooks/hello_pipeline_smoke_A1.ipynb, same repo) and
+replaces only the platform-specific cells:
 
-  cell 0  notes        -> Colab instructions (Kaggle API dataset download,
-                          Colab Secrets, /content lifetime warning)
-  cell 1  install      -> same installs (+ json import for the config cell)
-  cell 2  config       -> /content paths; dataset found in /content or a
-                          mounted Drive, else downloaded via the Kaggle API
-                          (Colab Secrets KAGGLE_USERNAME/KAGGLE_KEY or an
-                          uploaded kaggle.json)
+  cell 0  notes        -> Colab instructions (Drive datasets, dummy-data
+                          warnings, /content lifetime warning)
+  cell 1  install      -> scanpy + statsmodels + gdown
+  cell 2  config       -> /content paths; DATASET_REGISTRY with the
+                          Google Drive folder link for all six datasets;
+                          ensure_dataset() reuses a local folder or
+                          downloads it with gdown (this run: A1 only)
   cell 9  push         -> GITHUB_TOKEN from Colab Secrets or a hidden
                           getpass prompt; clone under /content
   cell 10 (appended)   -> zip /content/smoke_outputs and download it
 
 Cells 3-8 (prep, verbatim hello.md main code, driver with the single
 n_perm edit, dummy external data, run, save) are carried over untouched.
+The generated notebook contains no Kaggle code or references at all.
 
 Run: python3 scripts/gen_hello_pipeline_smoke_colab_nb.py
 """
@@ -25,26 +26,35 @@ import json, os
 
 MD_COLAB = """# Hello Pipeline — SMOKE TEST (A1 only, Google Colab)
 
-**Purpose: crash-test only.** This is the Colab version of `hello_pipeline_smoke_A1.ipynb` — identical pipeline code from `hello.md` (Stages 1–5 + driver), identical dummy external data, identical smoke settings. **No number that comes out of this run is science:**
+**Purpose: crash-test only.** This notebook runs the main code from `hello.md` (Stages 1–5 + driver) end-to-end on **A1** to find errors. **Every external input is DUMMY, so no number that comes out of this run is science:**
 
 - **MAGMA z-scores: random dummy** (seeded) for all 15 panel traits.
 - **Gene covariates: random dummy** (gene_length, snp_density).
-- **Gene annotation (chrom/start/end/biotype): DUMMY** — random chromosomes/positions, all `protein_coding`. Consequence: the −MHC track is almost identical to +MHC (dummy positions sit far from the chr6:25–34 Mb window).
+- **Gene annotation (chrom/start/end/biotype): DUMMY** — random chromosomes/positions, all `protein_coding`. Consequence: the −MHC track is almost identical to +MHC (dummy positions sit far from the chr6:25–34 Mb window). Real run will fetch real annotation (mygene/pybiomart).
 - **S-LDSC: not present** — lookups are `None`, so Engine 2 uses its internal OLS-proxy fallback (as-is, per plan).
-- **Permutations: n_perm = 10** (not 1,000). Consequence: the smallest possible spin p-value is 1/11 ≈ 0.091, so **no hit can reach "Confirmed" in this run by construction** — expected, not a failure.
+- **Permutations: n_perm = 10** (not 1,000). Consequence: the smallest possible spin p-value is 1/11 ≈ 0.091, so **no hit can reach "Confirmed" in this run by construction** — that is expected, not a failure.
 
 **Real inputs (verified):** Muse-GCN embeddings for A1, seed 42 — `10x_human_lymph_node_A1_seed42_embeddings.npy` (3484×64) + `..._labels.npy` (3484 values, 10 domains 0–9, BIRCH) — downloaded from the GitHub repo `embeddings/` folder inside the notebook. RNA counts come from `adata.X`, exactly as the driver is written.
 
-**How the dataset gets in (read before running):** Colab has no Kaggle "Add data", so the config cell (1) first searches `/content` (and a mounted Drive) for the `10x_human_lymph_node_A1` folder, and (2) if it is not there, downloads your private dataset `pulokpulok/spatial-multiomics-6datasets-private` (~788 MB) with the Kaggle API. For that download you need Kaggle API credentials in the session — either add `KAGGLE_USERNAME` and `KAGGLE_KEY` as Colab Secrets (key icon in the left sidebar), or upload your `kaggle.json` when the cell prompts you (get it from kaggle.com → Settings → API → Create New Token). The credentials are used only for that download.
+**Datasets come from Google Drive (Colab-only, no other platform involved):** the config cell holds a `DATASET_REGISTRY` with the Drive folder link for all six datasets. `ensure_dataset(name)` reuses the folder if it is already under `/content` (or a mounted Drive), otherwise downloads it with `gdown`. This smoke run downloads **only A1** (~58 MB: adata_RNA.h5ad 56.6 MB + adata_ADT.h5ad 1.1 MB + annotation.csv; contents verified 2026-11-09). The Drive folders must stay link-shared ("anyone with the link"), or `gdown` cannot fetch them — if a download fails with a permission error, that sharing setting is the first thing to check.
 
 **GitHub push (optional):** the push cell reads `GITHUB_TOKEN` from Colab Secrets, or asks with a hidden prompt. Without a token the run still completes — outputs stay in `/content/smoke_outputs/` and the last cell zips them for download. **Download or push before closing the tab: Colab deletes `/content` when the runtime ends.**
 
-**Runtime:** CPU runtime is fine (Runtime → Change runtime type → CPU; the code is NumPy, a GPU changes nothing). Estimate ~15–45 min for the pipeline, plus a few minutes for the dataset download.
+**Runtime:** CPU runtime is fine (Runtime → Change runtime type → CPU; the code is NumPy, a GPU changes nothing). Estimate ~15–45 min for the pipeline, plus under a minute for the A1 download.
 
 **Success =** the run cell finishes, `smoke_outputs/` contains `A1_results_df.csv` + `A1_summary.json`, and tier counts print. If any cell errors, copy the full traceback.
 """
 
-CONFIG_COLAB = """# ---------- CONFIG (smoke test, locked 2026-11-09) - Colab version ----------
+INSTALL_COLAB = """import os, sys, json, subprocess
+for pkg in ["scanpy", "statsmodels", "gdown"]:
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", pkg], check=True)
+import numpy as np
+import pandas as pd
+import scanpy as sc
+print("imports ok; numpy", np.__version__, "| pandas", pd.__version__)
+"""
+
+CONFIG_COLAB = """# ---------- CONFIG (smoke test, locked 2026-11-09) - Colab + Google Drive ----------
 SEED = 42
 SMOKE_N_PERM = 10            # smoke only; real run = 1000 (and 10000 recalibration)
 SECTION = "10x_human_lymph_node_A1"
@@ -53,55 +63,104 @@ LAB_NAME = "10x_human_lymph_node_A1_seed42_labels.npy"
 RAW_BASE = "https://raw.githubusercontent.com/rifatahsanpul0k/my_research/main/embeddings"
 WORK = "/content/smoke_inputs"
 OUTDIR = "/content/smoke_outputs"
+DATA_HOME = "/content/datasets"
 os.makedirs(WORK, exist_ok=True)
 os.makedirs(OUTDIR, exist_ok=True)
+os.makedirs(DATA_HOME, exist_ok=True)
 
-# ---------- locate the A1 folder: /content, mounted Drive, else Kaggle API ----------
+# ---------- Dataset registry: Google Drive folder per dataset ----------
+DATASET_REGISTRY = {
+    "10x_human_lymph_node_A1": {
+        "index": 0,
+        "url": "https://drive.google.com/drive/folders/10z1N4MwW8Y49o8GlkYGBKVx1N7fiMuyC",
+        "type": "10x",
+        "gt_col": "manual-anno",
+        "other_file": "adata_ADT.h5ad",
+        "anno_file": "annotation.csv"
+    },
+    "10x_human_lymph_node_D1": {
+        "index": 1,
+        "url": "https://drive.google.com/drive/folders/1-g_Ca2XMaMXF-MisuVY-wobWDX86O6zz",
+        "type": "10x",
+        "gt_col": "manual-anno",
+        "other_file": "adata_ADT.h5ad",
+        "anno_file": "annotation.csv"
+    },
+    "Mouse_Brain_E11_S1": {
+        "index": 2,
+        "url": "https://drive.google.com/drive/folders/1zRwDJrYnks0LRzlAVRqPU7jE_OcStgPo",
+        "type": "Spatial-epigenome-transcriptome",
+        "gt_col": "cluster",
+        "other_file": "adata_ATAC.h5ad",
+        "anno_file": "anno.csv"
+    },
+    "Mouse_Brain_E13_S1": {
+        "index": 3,
+        "url": "https://drive.google.com/drive/folders/1GOufwIRjjfcd9Bi2GKtebzKoPCg2jVud",
+        "type": "Spatial-epigenome-transcriptome",
+        "gt_col": "cluster",
+        "other_file": "adata_ATAC.h5ad",
+        "anno_file": "anno.csv"
+    },
+    "Mouse_Brain_E15_S1": {
+        "index": 4,
+        "url": "https://drive.google.com/drive/folders/1rHkTL5OF5qPsEERypRGMS51SjUQ69tdD",
+        "type": "Spatial-epigenome-transcriptome",
+        "gt_col": "cluster",
+        "other_file": "adata_ATAC.h5ad",
+        "anno_file": "anno.csv"
+    },
+    "Mouse_Brain_E18_S1": {
+        "index": 5,
+        "url": "https://drive.google.com/drive/folders/1Xj1LNIAY93biS6JIMKNRODn5GvtCKADB",
+        "type": "Spatial-epigenome-transcriptome",
+        "gt_col": "cluster",
+        "other_file": "adata_ATAC.h5ad",
+        "anno_file": "anno.csv"
+    },
+}
+
+# ---------- dataset manager: find locally, else download the Drive folder ----------
 import glob as _glob
-def find_data_root():
-    for base in ["/content", "/content/drive/MyDrive", "/content/datasets"]:
-        if os.path.isdir(os.path.join(base, SECTION)):
-            return base
-    hits = [os.path.dirname(os.path.dirname(p)) for p in
-            _glob.glob(f"/content/**/{SECTION}/adata_RNA.h5ad", recursive=True)]
-    return hits[0] if hits else None
+def _find_dataset_dir(name):
+    info = DATASET_REGISTRY[name]
+    need = ["adata_RNA.h5ad", info["other_file"], info["anno_file"]]
+    for cand in _glob.glob(f"/content/**/{name}", recursive=True):
+        if os.path.isdir(cand) and all(os.path.exists(os.path.join(cand, f)) for f in need):
+            return cand
+    # fallback: any directory under /content holding all three required files
+    for rna in _glob.glob("/content/**/adata_RNA.h5ad", recursive=True):
+        cand = os.path.dirname(rna)
+        if all(os.path.exists(os.path.join(cand, f)) for f in need):
+            return cand
+    return None
 
-DATA_ROOT = find_data_root()
-if DATA_ROOT is None:
-    print("dataset not found locally - downloading from Kaggle API ...")
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "kaggle"], check=True)
-    _kag_dir = os.path.expanduser("~/.kaggle")
-    os.makedirs(_kag_dir, exist_ok=True)
-    if not os.path.exists(os.path.join(_kag_dir, "kaggle.json")):
-        _got = False
-        try:  # Option A: Colab Secrets KAGGLE_USERNAME / KAGGLE_KEY
-            from google.colab import userdata
-            _u = userdata.get("KAGGLE_USERNAME"); _k = userdata.get("KAGGLE_KEY")
-            if _u and _k:
-                with open(os.path.join(_kag_dir, "kaggle.json"), "w") as _f:
-                    json.dump({"username": _u, "key": _k}, _f)
-                _got = True
-                print("Kaggle credentials: from Colab Secrets")
-        except Exception:
-            pass
-        if not _got:  # Option B: upload kaggle.json when prompted
-            from google.colab import files as _colab_files
-            print("Upload your kaggle.json (kaggle.com -> Settings -> API -> Create New Token)")
-            _up = _colab_files.upload()
-            assert "kaggle.json" in _up, "kaggle.json was not uploaded"
-            with open(os.path.join(_kag_dir, "kaggle.json"), "wb") as _f:
-                _f.write(_up["kaggle.json"])
-            print("Kaggle credentials: from uploaded kaggle.json")
-        os.chmod(os.path.join(_kag_dir, "kaggle.json"), 0o600)
-    subprocess.run(["kaggle", "datasets", "download", "-d",
-                    "pulokpulok/spatial-multiomics-6datasets-private",
-                    "-p", "/content/datasets", "--unzip"], check=True)
-    DATA_ROOT = find_data_root()
-assert DATA_ROOT, "A1 folder still not found after the Kaggle download - check the download output above"
-SEC_DIR = os.path.join(DATA_ROOT, SECTION)
+def ensure_dataset(name):
+    found = _find_dataset_dir(name)
+    if found:
+        print(f"{name}: already present at {found}")
+        return found
+    info = DATASET_REGISTRY[name]
+    print(f"{name}: downloading Drive folder {info['url']} ...")
+    r = subprocess.run(["gdown", "--folder", info["url"], "-O", DATA_HOME],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        r = subprocess.run([sys.executable, "-m", "gdown", "--folder", info["url"], "-O", DATA_HOME],
+                           capture_output=True, text=True)
+    print((r.stdout or "")[-500:])
+    if r.returncode != 0:
+        print((r.stderr or "")[-500:])
+    found = _find_dataset_dir(name)
+    assert found, (f"{name}: download did not produce the required files - if gdown reported a "
+                   "permission error, the Drive folder must be shared as 'anyone with the link'")
+    print(f"{name}: ready at {found}")
+    return found
+
+SEC_DIR = ensure_dataset(SECTION)
+_info = DATASET_REGISTRY[SECTION]
 RNA_PATH = os.path.join(SEC_DIR, "adata_RNA.h5ad")
-ADT_PATH = os.path.join(SEC_DIR, "adata_ADT.h5ad")
-ANNO_PATH = os.path.join(SEC_DIR, "annotation.csv")
+ADT_PATH = os.path.join(SEC_DIR, _info["other_file"])
+ANNO_PATH = os.path.join(SEC_DIR, _info["anno_file"])
 for p in (RNA_PATH, ADT_PATH, ANNO_PATH):
     assert os.path.exists(p), f"missing input file: {p}"
 print("inputs:", SEC_DIR)
@@ -117,15 +176,6 @@ E = np.load(os.path.join(WORK, EMB_NAME))
 C = np.load(os.path.join(WORK, LAB_NAME))
 print("E:", E.shape, E.dtype, "| C:", C.shape, C.dtype, "| domains:", np.unique(C))
 assert E.shape[0] == C.shape[0], "embedding rows != label count"
-"""
-
-INSTALL_COLAB = """import os, sys, json, subprocess
-for pkg in ["scanpy", "statsmodels"]:
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", pkg], check=True)
-import numpy as np
-import pandas as pd
-import scanpy as sc
-print("imports ok; numpy", np.__version__, "| pandas", pd.__version__)
 """
 
 PUSH_COLAB = """# ---------- OPTIONAL push of outputs to GitHub (runs/smoke-hello-pipeline) ----------
@@ -197,7 +247,7 @@ def main():
     with open(src_path) as f:
         nb = json.load(f)
     cells = nb["cells"]
-    assert len(cells) == 10, f"Kaggle source notebook should have 10 cells, got {len(cells)}"
+    assert len(cells) == 10, f"base notebook should have 10 cells, got {len(cells)}"
     _set(cells[0], MD_COLAB)
     _set(cells[1], INSTALL_COLAB)
     _set(cells[2], CONFIG_COLAB)
@@ -217,13 +267,14 @@ def main():
     import nbformat
     nbformat.read(out_path, as_version=4)
     text = open(out_path).read()
-    for token in ["/content/smoke_outputs", "kaggle.json", "KAGGLE_USERNAME",
+    for token in ["/content/smoke_outputs", "DATASET_REGISTRY", "ensure_dataset",
+                  "gdown", "10z1N4MwW8Y49o8GlkYGBKVx1N7fiMuyC",
+                  "1Xj1LNIAY93biS6JIMKNRODn5GvtCKADB",
                   "userdata", "smoke_outputs.zip", "n_perm_initial=SMOKE_N_PERM",
                   "run_single_lymph_node_section", "generate_dummy_external_data"]:
         assert token in text, f"MISSING TOKEN: {token}"
-    for bad in ["/kaggle/working", "/kaggle/input", "kaggle_secrets", "UserSecretsClient"]:
-        assert bad not in text, f"Kaggle-only remnant in Colab notebook: {bad}"
-    print("content check: Colab tokens present, no Kaggle-only remnants")
+    assert "kaggle" not in text.lower(), "a Kaggle reference leaked into the Colab-only notebook"
+    print("content check: Drive/Colab tokens present, zero Kaggle references")
 
 if __name__ == "__main__":
     main()
