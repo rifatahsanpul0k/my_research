@@ -86,15 +86,16 @@ SECTIONS = {
 
 import glob as _glob
 def find_refs_root():
-    for pat in ("/kaggle/input/*/magma.zip", "/kaggle/input/*/*/magma.zip", "/kaggle/input/*/*/*/magma.zip"):
-        for hit in _glob.glob(pat):
-            root = os.path.dirname(hit)
-            if os.path.exists(os.path.join(root, "gwas.zip")):
-                return root
+    cands = []
+    for pat in ("/kaggle/input/*", "/kaggle/input/*/*", "/kaggle/input/*/*/*"):
+        cands += _glob.glob(pat)
+    for root in cands:
+        if os.path.exists(os.path.join(root, "magma.zip")) or os.path.isdir(os.path.join(root, "magma")):
+            return root
     return None
 
 REFS_IN = find_refs_root()
-assert REFS_IN, "hello-pipeline-refs dataset not attached (magma.zip not found under /kaggle/input)"
+assert REFS_IN, "hello-pipeline-refs dataset not attached (no magma.zip or magma/ folder under /kaggle/input)"
 print("refs dataset at:", REFS_IN)
 
 def find_section_dir(folder):
@@ -169,32 +170,56 @@ def push_outputs(message):
         print("push skipped/failed (outputs safe in pilot_outputs):", str(e)[:300])
 """
 
-REFS_SETUP = """# ---------- Unzip reference bundles + MAGMA binary ----------
+REFS_SETUP = """# ---------- Reference bundles + MAGMA binary (zip OR Kaggle-extracted layout) ----------
 import zipfile, shutil, urllib.request, stat
-def _unzip(zpath, dest):
-    with zipfile.ZipFile(zpath) as zf:
-        zf.extractall(dest)
-
 def _find1(pat):
     hits = _glob.glob(pat, recursive=True)
     assert hits, f"not found: {pat}"
     return hits[0]
 
-if not os.path.exists(os.path.join(REFS, "gwas")):
+def _maybe(pat):
+    hits = _glob.glob(pat, recursive=True)
+    return hits[0] if hits else None
+
+def _unzip(zpath, dest):
+    with zipfile.ZipFile(zpath) as zf:
+        zf.extractall(dest)
+
+# Layout A: Kaggle already extracted the bundles (folders, no .zip files).
+# Layout B: bundles still .zip -> extract into REFS (working dir).
+if _maybe(os.path.join(REFS_IN, "**", "NCBI38.gene.loc")):
+    print("refs layout: already extracted by Kaggle - using in place")
+    SEARCH_ROOTS = [REFS_IN]
+else:
+    print("refs layout: zip bundles - extracting")
     for z in ("magma.zip", "gwas.zip"):
         zp = os.path.join(REFS_IN, z)
-        print("unzipping", z, "...")
+        assert os.path.exists(zp), f"{z} not found in refs dataset root {REFS_IN}"
         _unzip(zp, REFS)
-print("refs tree:", sorted(os.listdir(REFS)))
+    for inner, dest in (("magma_v1.10_static.zip", "magma_bin"),
+                        ("NCBI38.zip", "gene_loc"),
+                        ("g1000_eur.zip", "g1000")):
+        _unzip(_find1(os.path.join(REFS, "**", inner)), os.path.join(REFS, dest))
+    SEARCH_ROOTS = [REFS]
 
-# inner MAGMA zips (search recursively: dir-mode zip may or may not keep the folder level)
-_unzip(_find1(os.path.join(REFS, "**", "magma_v1.10_static.zip")), os.path.join(REFS, "magma_bin"))
-_unzip(_find1(os.path.join(REFS, "**", "NCBI38.zip")), os.path.join(REFS, "gene_loc"))
-_unzip(_find1(os.path.join(REFS, "**", "g1000_eur.zip")), os.path.join(REFS, "g1000"))
-MAGMA = _find1(os.path.join(REFS, "magma_bin", "**", "magma"))
+def _find_any(pat):
+    for r in SEARCH_ROOTS:
+        h = _maybe(os.path.join(r, "**", pat))
+        if h:
+            return h
+    raise AssertionError(f"not found under {SEARCH_ROOTS}: {pat}")
+
+# MAGMA binary: copy to the working dir so it can be made executable
+# (/kaggle/input is read-only).
+_bin_src = _find_any(os.path.join("magma_v1.10_static", "magma"))
+MAGMA = os.path.join(REFS, "magma_bin", "magma")
+os.makedirs(os.path.dirname(MAGMA), exist_ok=True)
+if os.path.abspath(_bin_src) != os.path.abspath(MAGMA):
+    shutil.copy(_bin_src, MAGMA)
 os.chmod(MAGMA, os.stat(MAGMA).st_mode | stat.S_IEXEC)
-GENE_LOC_38 = _find1(os.path.join(REFS, "gene_loc", "**", "NCBI38.gene.loc"))
-BFILE = _find1(os.path.join(REFS, "g1000", "**", "g1000_eur.bim"))[:-4]  # strip .bim
+
+GENE_LOC_38 = _find_any("NCBI38.gene.loc")
+BFILE = _find_any("g1000_eur.bim")[:-4]  # strip .bim
 assert os.path.exists(BFILE + ".bed") and os.path.exists(BFILE + ".fam"), "g1000_eur plink files incomplete"
 
 # NCBI37.3 gene locations were not in the download bundle - fetch (0.35 MB, link verified 2026-11-10)
@@ -209,9 +234,11 @@ print("MAGMA binary responds:", (("MAGMA" in _r.stdout) or ("magma" in _r.stdout
 print("BFILE:", BFILE)
 print("GENE_LOC_38:", GENE_LOC_38)
 print("GENE_LOC_37:", GENE_LOC_37)
-# locate the extracted gwas folder (holds one subfolder per trait)
-_cand = [d for d in _glob.glob(os.path.join(REFS, "**", "SLE"), recursive=True) if os.path.isdir(d)]
-assert _cand, "extracted gwas/SLE folder not found"
+# locate the gwas folder (holds one subfolder per trait)
+_cand = []
+for r in SEARCH_ROOTS:
+    _cand += [d for d in _glob.glob(os.path.join(r, "**", "SLE"), recursive=True) if os.path.isdir(d)]
+assert _cand, "gwas/SLE folder not found"
 GWAS_ROOT = os.path.dirname(_cand[0])
 print("GWAS_ROOT:", GWAS_ROOT)
 """
