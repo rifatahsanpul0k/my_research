@@ -241,6 +241,12 @@ for r in SEARCH_ROOTS:
 assert _cand, "gwas/SLE folder not found"
 GWAS_ROOT = os.path.dirname(_cand[0])
 print("GWAS_ROOT:", GWAS_ROOT)
+# All gwas roots on this machine (main refs + an optional patch dataset with
+# corrected files). A root whose path mentions "patch" is searched first.
+GWAS_ROOTS = sorted({d for d in _glob.glob("/kaggle/input/**/gwas", recursive=True)
+                     if os.path.isdir(d)} | {GWAS_ROOT},
+                    key=lambda r: (0 if "patch" in r else 1, r))
+print("GWAS_ROOTS:", GWAS_ROOTS)
 """
 
 SUMSTATS_PREP = """# ---------- Sumstats -> MAGMA inputs (snp-loc + pval with N column) ----------
@@ -289,21 +295,24 @@ def prep_trait(key, spec):
     pval_f = os.path.join(outdir, key + ".pval.txt")
     if os.path.exists(snp_loc_f) and os.path.exists(pval_f):
         print(key, ": already prepped"); return snp_loc_f, pval_f, build
-    path = os.path.join(GWAS_ROOT, folder, fname)
-    if not os.path.exists(path):
-        # fall back: find the file anywhere under GWAS_ROOT (folder/name drift)
-        _hits = [h for h in _glob.glob(os.path.join(GWAS_ROOT, "**", fname), recursive=True)
+    path = None
+    _acc = next((t for t in fname.replace("_", "-").split("-")
+                 if t.startswith("GCST")), None)
+    for _root in GWAS_ROOTS:
+        _cand_path = os.path.join(_root, folder, fname)
+        if os.path.exists(_cand_path):
+            path = _cand_path
+            break
+        _hits = [h for h in _glob.glob(os.path.join(_root, "**", fname), recursive=True)
                  if os.path.isfile(h)]
-        if not _hits:
-            _acc = next((t for t in fname.replace("_", "-").split("-")
-                         if t.startswith("GCST")), None)
-            if _acc:
-                _hits = [h for h in _glob.glob(os.path.join(GWAS_ROOT, "**", "*" + _acc + "*"),
-                                               recursive=True) if os.path.isfile(h)]
+        if not _hits and _acc:
+            _hits = [h for h in _glob.glob(os.path.join(_root, "**", "*" + _acc + "*"),
+                                            recursive=True) if os.path.isfile(h)]
         if _hits:
             path = _hits[0]
             print(f"{key}: resolved by search -> {path}")
-    assert os.path.exists(path), f"{key}: sumstats file missing: {path}"
+            break
+    assert path is not None and os.path.exists(path), f"{key}: sumstats file missing: {fname}"
     print(f"{key}: reading {path}")
     want = {chr_c, pos_c, p_c} | ({rsid_c} if rsid_c else set()) | ({n_col} if n_col else set())
     with open(path, "rb") as _fh:
