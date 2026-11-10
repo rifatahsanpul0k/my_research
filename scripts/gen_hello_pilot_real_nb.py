@@ -251,22 +251,25 @@ SUMSTATS_PREP = """# ---------- Sumstats -> MAGMA inputs (snp-loc + pval with N 
 # (chr:pos, GRCh37 - both files are GRCh37, so the mapping is build-consistent).
 TRAIT_SPEC = {
  # key                    folder               file                                                              sep     rsid          chr             pos                    p / neglog10        N fixed  N col  build
- "SLE":                   ("SLE",               "bentham_2015_26502338_sle_efo0002690_1_gwas.sumstats.tsv.gz",       "\\t",  "rsid",       "chrom",        "pos",                 "p",                23210,   None,  "37"),
- "RA":                    ("RA",                "GCST90132223.h.tsv.gz",                                               "\\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          97173,   None,  "38"),
- "IBD":                   ("IBD",               "28067908-GCST004131-EFO_0003767.h.tsv.gz",                              "\\t",  "variant_id", "chromosome",   "base_pair_location",  "p_value",          59957,   None,  "38"),
- "MS":                    ("MS",                "GCST90558092.tsv",                                                    "\\t",  None,         "chromosome",   "base_pair_location",  "p_value",          360004,  None,  "37"),
- "T1D":                   ("T1D",               "34012112-GCST90014023-EFO_0001359.h.tsv.gz",                            "\\t",  "variant_id", "chromosome",   "base_pair_location",  "p_value",          520580,  None,  "38"),
- "Celiac":                ("CELIAC",            "20190752-GCST000612-EFO_0001060.h.tsv.gz",                              "\\t",  "variant_id", "chromosome",   "base_pair_location",  "p_value",          15283,   None,  "38"),
- "DLBCL":                 ("DLBCL",             "GCST90624739.h.tsv.gz",                                               "\\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          658535,  None,  "38"),
- "FL":                    ("FL",                "GCST90624741.h.tsv.gz",                                               "\\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          657982,  None,  "38"),
- "CLL":                   ("CLL",               "GCST90624738.h.tsv.gz",                                               "\\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          1108777, None,  "38"),
- "Lymphocyte_Count":      ("LYMPHOCYTE_COUNT",  "32888493-GCST90002316-EFO_0004587.h.tsv.gz",                            "\\t",  "variant_id", "chromosome",   "base_pair_location",  "p_value",          524923,  None,  "38"),
- "Adult_Standing_Height": ("HEIGHT",            "GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR.gz",                   "\\t",  "RSID",       "CHR",          "POS",                 "P",                None,    "N",   "37"),
- "Heel_BMD":              ("HEEL_BMD",          "30598549-GCST006979-EFO_0009270.h.tsv.gz",                              "\\t",  "variant_id", "chromosome",   "base_pair_location",  "p_value",          None,    "n",   "38"),
- "Hair_Colour":           ("HAIR_COLOUR",       "hair_panukbb_1747_blonde.tsv.bgz",                                    "\\t",  None,         "chr",          "pos",                 "neglog10_pval_EUR",419469,  None,  "37"),
- "ASD":                   ("ASD",               "iPSYCH-PGC_ASD_Nov2017.gz",                                           "\\t",  "SNP",        "CHR",          "BP",                  "P",                46350,   None,  "37"),
- "Cortical_Surface_Area": ("CORTICAL_SURFACE_AREA", "ENIGMA3_mixed_se_wo_Mean_Full_SurfArea_20190429.txt.gz",          "\\\\s+", "SNP",        "CHR",          "BP",                  "P",                None,    "N",   "37"),
- "Cortical_Thickness":    ("CORTICAL_THICKNESS",    "ENIGMA3_mixed_se_wo_Mean_Full_Thickness_20190429.txt.gz",          "\\\\s+", "SNP",        "CHR",          "BP",                  "P",                None,    "N",   "37"),
+ # Paths + columns LOCKED to the user's Kaggle inventory printout, 2026-11-10:
+ # Kaggle stored the downloads DECOMPRESSED (plain text, no .gz) and some as
+ # nested folders; harmonised files use their hm_rsid column.
+ "SLE":                   ("SLE",               "bentham_2015_26502338_sle_efo0002690_1_gwas.sumstats.tsv",       "\t",  "rsid",       "chrom",        "pos",                 "p",                23210,   None,  "37"),
+ "RA":                    ("RA",                "GCST90132223.h.tsv",                                               "\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          97173,   None,  "38"),
+ "IBD":                   ("IBD",               "28067908-GCST004131-EFO_0003767.h.tsv",                              "\t",  "hm_rsid",    "chromosome",   "base_pair_location",  "p_value",          59957,   None,  "38"),
+ "MS":                    ("MS",                "GCST90558092.tsv",                                                    "\t",  None,         "chromosome",   "base_pair_location",  "p_value",          360004,  None,  "37"),
+ "T1D":                   ("T1D/34012112-GCST90014023-EFO_0001359.h.tsv", "harmonised.qc.tsv",                        "\t",  "hm_rsid",    "chromosome",   "base_pair_location",  "p_value",          520580,  None,  "38"),
+ "Celiac":                ("CELIAC",            "20190752-GCST000612-EFO_0001060.h.tsv",                              "\t",  "hm_rsid",    "chromosome",   "base_pair_location",  "p_value",          15283,   None,  "38"),
+ "DLBCL":                 ("DLBCL",             "GCST90624739.h.tsv",                                               "\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          658535,  None,  "38"),
+ "FL":                    ("FL",                "GCST90624741.h.tsv",                                               "\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          657982,  None,  "38"),
+ "CLL":                   ("CLL",               "GCST90624738.h.tsv",                                               "\t",  "rsid",       "chromosome",   "base_pair_location",  "p_value",          1108777, None,  "38"),
+ "Lymphocyte_Count":      ("LYMPHOCYTE_COUNT/32888493-GCST90002316-EFO_0004587.h.tsv", "harmonised.qc.tsv",          "\t",  "hm_rsid",    "chromosome",   "base_pair_location",  "p_value",          524923,  None,  "38"),
+ "Adult_Standing_Height": ("HEIGHT/GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR", "GIANT_HEIGHT_YENGO_2022_GWAS_SUMMARY_STATS_EUR", "\t", "RSID", "CHR",  "POS",                 "P",                None,    "N",   "37"),
+ "Heel_BMD":              ("HEEL_BMD",          "30598549-GCST006979-EFO_0009270.h.tsv",                              "\t",  "hm_rsid",    "chromosome",   "base_pair_location",  "p_value",          None,    "n",   "38"),
+ "Hair_Colour":           ("HAIR_COLOUR",       "hair_panukbb_1747_blonde.tsv.bgz",                                    "\t",  None,         "chr",          "pos",                 "neglog10_pval_EUR",419469,  None,  "37"),
+ "ASD":                   ("ASD",               "iPSYCH-PGC_ASD_Nov2017",                                           "\t",  "SNP",        "CHR",          "BP",                  "P",                46350,   None,  "37"),
+ "Cortical_Surface_Area": ("CORTICAL_SURFACE_AREA/ENIGMA3_mixed_se_wo_Mean_Full_SurfArea_20190429.txt", "mixed_se_wo_Mean_Full_SurfArea1_m6e3uk.txt", "\\s+", "SNP", "CHR", "BP",      "P",                None,    "N",   "37"),
+ "Cortical_Thickness":    ("CORTICAL_THICKNESS/ENIGMA3_mixed_se_wo_Mean_Full_Thickness_20190429.txt", "mixed_se_wo_Mean_Full_Thickness1_m6e3uk.txt", "\\s+", "SNP", "CHR", "BP",      "P",                None,    "N",   "37"),
 }
 
 BIM = None
@@ -326,6 +329,8 @@ def prep_trait(key, spec):
         print(f"{key}: bim-mapped {len(df)} rows")
     df = df[df["SNP"].str.startswith("rs", na=False)]
     df["P"] = df["P"].clip(lower=1e-300, upper=1.0)
+    if n_col:
+        assert n_col in df.columns, f"{key}: N column {n_col!r} not in file columns {list(df.columns)}"
     df["N"] = pd.to_numeric(df[n_col], errors="coerce").fillna(n_fixed) if n_col else float(n_fixed)
     df = df.sort_values("P").drop_duplicates(subset=["SNP"], keep="first")
     df[["SNP", "CHR", "BP"]].to_csv(snp_loc_f, sep="\\t", index=False, header=False)
