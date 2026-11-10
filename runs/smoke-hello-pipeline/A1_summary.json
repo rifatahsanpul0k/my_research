@@ -1,0 +1,19 @@
+{
+  "run": "hello-pipeline SMOKE TEST - dummy MAGMA/covariates/annotation, S-LDSC fallback, n_perm=10",
+  "section": "A1",
+  "embedding": "10x_human_lymph_node_A1_seed42_embeddings.npy",
+  "labels": "10x_human_lymph_node_A1_seed42_labels.npy",
+  "E_shape": [
+    3484,
+    64
+  ],
+  "n_domains": 10,
+  "n_perm": 10,
+  "M_eff": 2.9859481371702192,
+  "recalibrated": false,
+  "tier_counts": {
+    "Negative": 150
+  },
+  "gt_ARI": 0.2920419078934765,
+  "gt_NMI": 0.42007913859244805
+}
