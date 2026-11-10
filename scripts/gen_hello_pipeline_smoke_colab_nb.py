@@ -17,7 +17,15 @@ replaces only the platform-specific cells:
   cell 10 (appended)   -> zip /content/smoke_outputs and download it
 
 Cells 3-8 (prep, verbatim hello.md main code, driver with the single
-n_perm edit, dummy external data, run, save) are carried over untouched.
+n_perm edit, dummy external data, run, save) are carried over, with ONE
+notebook-level fix in cell 6 (dummy external data): the A1/D1 gene panel
+carries 3 duplicated symbols (TBCE, HSPA14, TMSB15B), so the dummy
+Series/DataFrame built on those names have duplicated index labels and a
+lookup by such a label returns a Series instead of a scalar — this
+crashed Engine 1 in the first live smoke run (2026-11-10, "truth value of
+a Series is ambiguous"). Cell 6 now drops duplicated index entries
+(keep="first") right after generating the dummy data — the exact patch
+the user ran by hand to complete the smoke test, folded in permanently.
 The generated notebook contains no Kaggle code or references at all.
 
 Run: python3 scripts/gen_hello_pipeline_smoke_colab_nb.py
@@ -238,6 +246,20 @@ except Exception as e:
 """
 
 
+DEDUPE_FIX = """
+
+# ---------- DEDUPE FIX (folded in 2026-11-10; was a hand-run patch cell) ----------
+# The A1/D1 gene panel carries 3 duplicated symbols (TBCE, HSPA14, TMSB15B),
+# so the dummy Series/DataFrame above have duplicated index labels. A lookup
+# by a duplicated label returns a Series instead of a scalar, which crashed
+# Engine 1 in the first live run ("truth value of a Series is ambiguous").
+# Drop duplicated index entries (keep first) so every lookup returns a scalar.
+magma_z_dict = {t: s[~s.index.duplicated(keep="first")] for t, s in magma_z_dict.items()}
+gene_covariates = gene_covariates[~gene_covariates.index.duplicated(keep="first")]
+print("deduped dummy externals:", len(magma_z_dict), "traits | covariates:", gene_covariates.shape)
+"""
+
+
 def _set(cell, text):
     cell["source"] = text.splitlines(keepends=True)
 
@@ -251,6 +273,10 @@ def main():
     _set(cells[0], MD_COLAB)
     _set(cells[1], INSTALL_COLAB)
     _set(cells[2], CONFIG_COLAB)
+    _dummy = "".join(cells[6]["source"])
+    assert "generate_dummy_external_data(GENES, seed=SEED)" in _dummy, "cell 6 is not the dummy-data cell"
+    assert "duplicated(keep=" not in _dummy, "dedupe fix already applied to base cell 6"
+    _set(cells[6], _dummy + DEDUPE_FIX)
     _set(cells[9], PUSH_COLAB)
     cells.append({"cell_type": "code", "execution_count": None, "metadata": {},
                   "outputs": [], "source": ZIP_CELL.splitlines(keepends=True)})
@@ -271,7 +297,8 @@ def main():
                   "gdown", "10z1N4MwW8Y49o8GlkYGBKVx1N7fiMuyC",
                   "1Xj1LNIAY93biS6JIMKNRODn5GvtCKADB",
                   "userdata", "smoke_outputs.zip", "n_perm_initial=SMOKE_N_PERM",
-                  "run_single_lymph_node_section", "generate_dummy_external_data"]:
+                  "run_single_lymph_node_section", "generate_dummy_external_data",
+                  "deduped dummy externals", "TBCE, HSPA14, TMSB15B"]:
         assert token in text, f"MISSING TOKEN: {token}"
     assert "kaggle" not in text.lower(), "a Kaggle reference leaked into the Colab-only notebook"
     print("content check: Drive/Colab tokens present, zero Kaggle references")
