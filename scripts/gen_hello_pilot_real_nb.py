@@ -301,8 +301,10 @@ def prep_trait(key, spec):
             path = _hits[0]
             print(f"{key}: resolved by search -> {path}")
     assert os.path.exists(path), f"{key}: sumstats file missing: {path}"
+    print(f"{key}: reading {path}")
     want = {chr_c, pos_c, p_c} | ({rsid_c} if rsid_c else set()) | ({n_col} if n_col else set())
-    _comp = "gzip" if (fname.endswith(".gz") or fname.endswith(".bgz")) else None
+    with open(path, "rb") as _fh:
+        _comp = "gzip" if _fh.read(2) == bytes([0x1F, 0x8B]) else None  # trust magic bytes, not the name
     df = pd.read_csv(path, sep=sep, engine="python" if sep == "\\\\s+" else "c", compression=_comp,
                      usecols=lambda c: c in want or c == "low_confidence_EUR")
     df = df.rename(columns={chr_c: "CHR", pos_c: "BP", p_c: "PRAW"})
