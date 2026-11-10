@@ -86,7 +86,7 @@ SECTIONS = {
 
 import glob as _glob
 def find_refs_root():
-    for pat in ("/kaggle/input/*/magma.zip", "/kaggle/input/*/*/magma.zip"):
+    for pat in ("/kaggle/input/*/magma.zip", "/kaggle/input/*/*/magma.zip", "/kaggle/input/*/*/*/magma.zip"):
         for hit in _glob.glob(pat):
             root = os.path.dirname(hit)
             if os.path.exists(os.path.join(root, "gwas.zip")):
