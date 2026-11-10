@@ -287,6 +287,19 @@ def prep_trait(key, spec):
     if os.path.exists(snp_loc_f) and os.path.exists(pval_f):
         print(key, ": already prepped"); return snp_loc_f, pval_f, build
     path = os.path.join(GWAS_ROOT, folder, fname)
+    if not os.path.exists(path):
+        # fall back: find the file anywhere under GWAS_ROOT (folder/name drift)
+        _hits = [h for h in _glob.glob(os.path.join(GWAS_ROOT, "**", fname), recursive=True)
+                 if os.path.isfile(h)]
+        if not _hits:
+            _acc = next((t for t in fname.replace("_", "-").split("-")
+                         if t.startswith("GCST")), None)
+            if _acc:
+                _hits = [h for h in _glob.glob(os.path.join(GWAS_ROOT, "**", "*" + _acc + "*"),
+                                               recursive=True) if os.path.isfile(h)]
+        if _hits:
+            path = _hits[0]
+            print(f"{key}: resolved by search -> {path}")
     assert os.path.exists(path), f"{key}: sumstats file missing: {path}"
     want = {chr_c, pos_c, p_c} | ({rsid_c} if rsid_c else set()) | ({n_col} if n_col else set())
     _comp = "gzip" if (fname.endswith(".gz") or fname.endswith(".bgz")) else None
