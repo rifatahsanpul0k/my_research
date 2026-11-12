@@ -274,8 +274,8 @@ TRAIT_SPEC = {
  "Heel_BMD":              ("HEEL_BMD",          "30598549-GCST006979-EFO_0009270.h.tsv",                              "\t",  "hm_rsid",    "chromosome",   "base_pair_location",  "p_value",          None,    "n",   "38"),
  "Hair_Colour":           ("HAIR_COLOUR",       "hair_panukbb_1747_blonde.tsv.bgz",                                    "\t",  None,         "chr",          "pos",                 "neglog10_pval_EUR",419469,  None,  "37"),
  "ASD":                   ("ASD",               "iPSYCH-PGC_ASD_Nov2017",                                           "\t",  "SNP",        "CHR",          "BP",                  "P",                46350,   None,  "37"),
- "Cortical_Surface_Area": ("CORTICAL_SURFACE_AREA/ENIGMA3_mixed_se_wo_Mean_Full_SurfArea_20190429.txt", "mixed_se_wo_Mean_Full_SurfArea1_m6e3uk.txt", "\\s+", "SNP", "CHR", "BP",      "P",                None,    "N",   "37"),
- "Cortical_Thickness":    ("CORTICAL_THICKNESS/ENIGMA3_mixed_se_wo_Mean_Full_Thickness_20190429.txt", "mixed_se_wo_Mean_Full_Thickness1_m6e3uk.txt", "\\s+", "SNP", "CHR", "BP",      "P",                None,    "N",   "37"),
+ "Cortical_Surface_Area": ("CORTICAL_SURFACE_AREA/ENIGMA3_mixed_se_wo_Mean_Full_SurfArea_20190429.txt", "mixed_se_wo_Mean_Full_SurfArea1_m6e3uk.txt", "\\\\s+", "SNP", "CHR", "BP",      "P",                None,    "N",   "37"),
+ "Cortical_Thickness":    ("CORTICAL_THICKNESS/ENIGMA3_mixed_se_wo_Mean_Full_Thickness_20190429.txt", "mixed_se_wo_Mean_Full_Thickness1_m6e3uk.txt", "\\\\s+", "SNP", "CHR", "BP",      "P",                None,    "N",   "37"),
 }
 
 BIM = None
@@ -340,7 +340,11 @@ def prep_trait(key, spec):
     df["P"] = df["P"].clip(lower=1e-300, upper=1.0)
     if n_col:
         assert n_col in df.columns, f"{key}: N column {n_col!r} not in file columns {list(df.columns)}"
-    df["N"] = pd.to_numeric(df[n_col], errors="coerce").fillna(n_fixed) if n_col else float(n_fixed)
+    if n_col:
+        _n = pd.to_numeric(df[n_col], errors="coerce")
+        df["N"] = _n.fillna(n_fixed if n_fixed is not None else _n.median())
+    else:
+        df["N"] = float(n_fixed)
     df = df.sort_values("P").drop_duplicates(subset=["SNP"], keep="first")
     df[["SNP", "CHR", "BP"]].to_csv(snp_loc_f, sep="\\t", index=False, header=False)
     df[["SNP", "P", "N"]].to_csv(pval_f, sep="\\t", index=False)

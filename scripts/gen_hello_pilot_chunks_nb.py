@@ -117,7 +117,7 @@ REPORT1 = r"""# ---------- Chunk 1 report: fast MAGMA batch + prep sanity ------
 rows = []
 for p in sorted(os.listdir(MAGMA_OUT)):
     if p.endswith(".genes.out"):
-        df = pd.read_csv(os.path.join(MAGMA_OUT, p), sep="\s+", engine="python")
+        df = pd.read_csv(os.path.join(MAGMA_OUT, p), sep="\\s+", engine="python")
         rows.append({"trait": p.replace(".genes.out", ""), "genes": len(df),
                      "median_abs_Z": float(df["ZSTAT"].abs().median())})
 magma_report = pd.DataFrame(rows)
